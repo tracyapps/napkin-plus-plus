@@ -4,7 +4,7 @@ All notable changes to napkin++ are recorded here. The version in this file and
 `package.json` must match the tag: the release workflow refuses to publish a
 bundle that disagrees with itself.
 
-## 1.0.0 — 2026-11-15
+## [1.0.0] — 2026-11-15
 
 The first release with a public home, a download, and a way to tell me when
 something is wrong.
@@ -67,7 +67,7 @@ something is wrong.
   release runbook.
 - Project initials now ignore parentheticals (`lu-app (2)` is `LA`, not `L(`).
 
-## 0.2.0 — 2026-11-06
+## [0.2.0] — 2026-11-06
 
 - Folders with a colour, filtering, drag-and-drop and a context menu.
 - Project merge with a surviving name, alias handling and conflict counts.
@@ -79,7 +79,7 @@ something is wrong.
 - Eight palettes, custom accents, six Dock colourways, menu-bar icon and
   open-at-login.
 
-## 0.1.0
+## [0.1.0]
 
 - First working build: projects, accounts with typed fields, environments,
   notes and snippets with folding, links and services, the command palette,

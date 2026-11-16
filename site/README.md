@@ -1,7 +1,8 @@
 # napkinplusplus.app
 
 The public site: the landing page, support, contact, privacy, changelog, and a
-404. No framework, no build step, no analytics.
+404. No framework, no build step, no analytics. The app it describes requires macOS
+13+; that number comes from Electron's `LSMinimumSystemVersion`.
 
 ## Deploy
 

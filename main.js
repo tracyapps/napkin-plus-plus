@@ -252,6 +252,11 @@ function scheduleDetection(projectId) {
             count,
             headline: res.headline,
             proposals: res.proposals,
+            page: res.page,
+            repo: res.repo,
+            hosting: res.hosting,
+            dns: res.dns,
+            email: res.email,
             warnings: res.warnings,
           });
         }

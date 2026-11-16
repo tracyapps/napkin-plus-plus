@@ -3219,6 +3219,11 @@
         D.esc(update.current || meta.version || '') +
         '. Download it, quit napkin++, and replace the app in Applications.</div>' +
         (update.assetBytes ? '<div class="hint">' + D.esc(U.formatBytes(update.assetBytes)) + ' · ' + D.esc(update.assetName || '') + '</div>' : '') +
+        (update.notes
+          ? '<div class="hint update-notes">' +
+            D.esc(String(update.notes).split(/\r?\n/).slice(0, 6).join('\n')) +
+            '</div>'
+          : '') +
         '</div><div class="update-actions"><button class="btn sm primary" data-action="open-update">Download</button>' +
         '<button class="btn sm ghost" data-action="skip-update">Skip this version</button></div></div>';
     } else if (update && update.ok === false) {
@@ -3269,6 +3274,9 @@
         '<button class="btn sm" data-action="open-url" data-url="' +
         D.esc(links.support || '') +
         '">Support the developer</button>' +
+        '<button class="btn sm" data-action="open-url" data-url="' +
+        D.esc((links.site || '') + '/privacy') +
+        '">Privacy</button>' +
         '<button class="btn sm" data-action="open-url" data-url="' +
         D.esc(links.developer || '') +
         '">tapps.design</button></div></div>',
@@ -5270,6 +5278,11 @@
         res: {
           ok: true,
           proposals: event.proposals,
+          page: event.page || null,
+          repo: event.repo || null,
+          hosting: event.hosting || [],
+          dns: event.dns || [],
+          email: event.email || [],
           warnings: event.warnings || [],
           cached: false,
         },

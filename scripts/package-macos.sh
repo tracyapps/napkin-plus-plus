@@ -32,6 +32,7 @@ echo "• packaging napkin++ $VERSION ($ARCH)"
   --app-bundle-id=com.local.napkin-plus-plus \
   --app-version="$VERSION" \
   --app-category-type=public.app-category.developer-tools \
+  --app-copyright="Copyright © 2026 tapps" \
   --icon=assets/icon.icns \
   --out=dist \
   --overwrite \

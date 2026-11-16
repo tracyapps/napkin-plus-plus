@@ -387,6 +387,11 @@ One-time order of operations. The download button points at
 not be announced before the release is published.
 
 1. **Create the repo** at `github.com/tapps/napkin-plus-plus` and push `main`.
+   It must be **public**: the download button and the in-app update check are
+   unauthenticated, so a private repo returns 404 to every install. Create the
+   `hello@napkinplusplus.app` mailbox (or a forward to your own address) at the
+   same time — the site, the app's feedback sheet and SECURITY.md all point at
+   it.
    If you use a different owner or name, change it in three places and commit:
    `app/config.js` (`REPO`, `RELEASE/SITE` URLs), `site/assets/config.js`
    (`repo`), and `package.json` (`repository`, `homepage`, `bugs`).

@@ -3608,3 +3608,10 @@ kbd {
     animation-duration: 3s;
   }
 }
+
+.update-notes {
+  max-height: 92px;
+  margin-top: 6px;
+  overflow: auto;
+  white-space: pre-wrap;
+}

@@ -15,7 +15,7 @@
     issuesUrl: github + "/issues",
     email: "hello@napkinplusplus.app",
     version: "1.0.0",
-    requirements: "macOS 12+",
+    requirements: "macOS 13+",
     support: {
       cashapp: {
         name: "cash app",

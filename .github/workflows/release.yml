@@ -121,13 +121,14 @@ jobs:
             --app-bundle-id=com.local.napkin-plus-plus \
             --app-version="$VERSION" \
             --app-category-type=public.app-category.developer-tools \
+            --app-copyright="Copyright © 2026 tapps" \
             --icon=assets/icon.icns \
             --out=dist \
             --overwrite \
             --prune=true \
             --quiet \
-            --ignore="^/(docs|tests|dist|scripts|\.zwork|node_modules)($|/)" \
-            --ignore="^/(README\.md|package-lock\.json|\.gitignore)$"
+            --ignore="^/(docs|tests|dist|scripts|site|\.github|\.zwork|node_modules)($|/)" \
+            --ignore="^/(README\.md|CONTRIBUTING\.md|SECURITY\.md|LICENSE\.md|CHANGELOG\.md|package-lock\.json|\.gitignore|\.editorconfig|\.gitattributes)$"
 
       - name: Ad-hoc sign the bundle
         run: |

@@ -18,8 +18,8 @@ npm install
 npm start
 ```
 
-macOS only (hidden-inset title bar, Dock icon, `⌥Space` global summon). The app
-opens with an empty vault; press `⌘N` or `⌥Space` to start.
+macOS 13 or newer (hidden-inset title bar, Dock icon, `⌥Space` global summon).
+The app opens with an empty vault; press `⌘N` or `⌥Space` to start.
 
 ### Install it as a macOS app
 
