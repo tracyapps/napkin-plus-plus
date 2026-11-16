@@ -44,7 +44,7 @@ test('turns a GitHub release into a check result', () => {
     tag_name: 'v1.0.1',
     name: 'napkin++ 1.0.1',
     body: 'Fixes the thing.',
-    html_url: 'https://github.com/tapps/napkin-plus-plus/releases/tag/v1.0.1',
+    html_url: 'https://github.com/tracyapps/napkin-plus-plus/releases/tag/v1.0.1',
     published_at: '2026-11-01T12:00:00Z',
     prerelease: false,
     assets: [

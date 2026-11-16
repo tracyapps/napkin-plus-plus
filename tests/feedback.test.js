@@ -9,7 +9,7 @@ const base = {
   message: 'Pasting a .env block dropped the last key.\nIt happened on staging.',
   report: 'napkin++ 1.0.0 · arm64\nVault: 3 projects · 12 KB\n(No project names, URLs or secret values are included.)',
   includeDiagnostics: true,
-  repo: 'tapps/napkin-plus-plus',
+  repo: 'tracyapps/napkin-plus-plus',
   email: 'hello@napkinplusplus.app',
 };
 
@@ -54,7 +54,7 @@ test('a home directory is redacted from paths', () => {
 
 test('the issue URL is prefilled, labelled and capped', () => {
   const url = feedback.issueUrl(base);
-  assert.ok(url.startsWith('https://github.com/tapps/napkin-plus-plus/issues/new?'));
+  assert.ok(url.startsWith('https://github.com/tracyapps/napkin-plus-plus/issues/new?'));
   const params = new URL(url).searchParams;
   assert.equal(params.get('title'), '[Bug] Pasting a .env block dropped the last key.');
   assert.equal(params.get('labels'), 'bug');

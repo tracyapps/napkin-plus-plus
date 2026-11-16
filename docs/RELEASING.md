@@ -2,7 +2,7 @@
 
 The runbook for shipping a version. Follow it in order; every command assumes the
 repo root and a macOS machine with Node 24, npm, Xcode command line tools, and
-push access to `github.com/tapps/napkin-plus-plus`.
+push access to `github.com/tracyapps/napkin-plus-plus`.
 
 A release is: one tag on `main`, three zipped builds (arm64, x64, universal), a
 `SHA256SUMS.txt`, and release notes taken from `CHANGELOG.md`. The app's own
@@ -220,6 +220,10 @@ xattr -l "napkin++.app"
 Ad-hoc signing is fine for local builds and for people who trust you. It is not
 fine for a public download: Gatekeeper rejects it on a clean machine.
 
+The prerequisites (Team ID, Developer ID Application certificate, app-specific
+password, CI secrets) are in **[NOTARIZATION.md](NOTARIZATION.md)**. Run
+`npm run notarize:check` to see which ones this Mac already has.
+
 ### Prerequisites
 
 - A paid Apple Developer Program membership.
@@ -386,7 +390,7 @@ One-time order of operations. The download button points at
 `releases/latest`, which 404s until the first release exists, so the site must
 not be announced before the release is published.
 
-1. **Create the repo** at `github.com/tapps/napkin-plus-plus` and push `main`.
+1. **Create the repo** at `github.com/tracyapps/napkin-plus-plus` and push `main`.
    It must be **public**: the download button and the in-app update check are
    unauthenticated, so a private repo returns 404 to every install. Create the
    `hello@napkinplusplus.app` mailbox (or a forward to your own address) at the

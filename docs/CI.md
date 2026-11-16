@@ -100,8 +100,10 @@ npm run site:check
 
 `scripts/check-site-links.mjs` walks every `site/*.html`, resolves each internal
 `href`/`src` (including `#fragment` and `?query` forms) to a file, and fails with
-the page and the missing path. `ci.yml` runs it on every push; `site.yml` runs it
-before deploying. External URLs are not fetched, so the check is offline and
+the page and the missing path. It also evaluates `site/assets/config.js` and
+fails if the random footer tagline list is missing, duplicated, too short, or
+absent from a page. `ci.yml` runs it on every push; `site.yml` runs it before
+deploying. External URLs are not fetched, so the check is offline and
 deterministic.
 
 ## Checking workflow YAML locally

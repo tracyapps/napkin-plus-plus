@@ -42,7 +42,7 @@ This is the context you need to judge whether something is a bug:
   A feedback report is composed locally (`app/feedback.js`) and sent by you, or
   not at all; diagnostics deliberately exclude project names, links and values.
 - **Network access is limited to two things.** The update check reads
-  `https://api.github.com/repos/tapps/napkin-plus-plus/releases/latest`, and link
+  `https://api.github.com/repos/tracyapps/napkin-plus-plus/releases/latest`, and link
   inspection fetches the public URLs in a project (the page itself, its DNS
   records, and GitHub metadata for GitHub links). Those requests go to the sites
   involved and are visible to them.

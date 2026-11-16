@@ -37,7 +37,10 @@ The default build is ad-hoc signed and not notarized, so it launches locally
 without a Gatekeeper prompt; if macOS objects after copying it between machines,
 right-click the app and choose Open. Setting `APPLE_ID`,
 `APPLE_APP_SPECIFIC_PASSWORD` and `APPLE_TEAM_ID` with a Developer ID identity in
-the keychain upgrades the same script to a hardened, notarized build. See
+the keychain upgrades the same script to a hardened, notarized build.
+`npm run notarize:check` says what is already in place and what is missing;
+[docs/NOTARIZATION.md](docs/NOTARIZATION.md) has the click-by-click for the
+certificate, Team ID and app-specific password. See
 [docs/RELEASING.md](docs/RELEASING.md) for the runbook and the current limits of
 in-place updates.
 

@@ -10,6 +10,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'site');
@@ -68,9 +69,32 @@ for (const page of pages) {
   }
 }
 
+// The footer joke needs a list to pick from and a slot on every page.
+try {
+  const sandbox = { window: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets', 'config.js'), 'utf8'), sandbox);
+  const taglines = sandbox.window.NAPKIN && sandbox.window.NAPKIN.moreThan;
+  if (!Array.isArray(taglines) || taglines.length < 12) {
+    problems.push('assets/config.js: moreThan needs at least 12 entries');
+  } else {
+    if (new Set(taglines).size !== taglines.length) {
+      problems.push('assets/config.js: moreThan has duplicate entries');
+    }
+    for (const page of pages) {
+      if (!fs.readFileSync(page, 'utf8').includes('data-more-than')) {
+        problems.push(path.relative(root, page) + ': footer is missing [data-more-than]');
+      }
+    }
+  }
+} catch (error) {
+  problems.push('assets/config.js could not be evaluated: ' + error.message);
+}
+
 if (problems.length) {
-  console.error(`x ${problems.length} broken internal link(s) in ${pages.length} page(s):`);
+  console.error(`x ${problems.length} problem(s) in ${pages.length} page(s):`);
   for (const problem of problems) console.error('  - ' + problem);
   process.exit(1);
 }
-console.log(`ok: ${checked} internal link(s) across ${pages.length} page(s) resolve to files`);
+console.log(
+  `ok: ${checked} internal link(s) across ${pages.length} page(s) resolve; footer tagline present on each`
+);

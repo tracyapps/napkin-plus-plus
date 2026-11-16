@@ -5,7 +5,7 @@
   "redirects": [
     {
       "source": "/download",
-      "destination": "https://github.com/tapps/napkin-plus-plus/releases/latest",
+      "destination": "https://github.com/tracyapps/napkin-plus-plus/releases/latest",
       "permanent": false
     },
     {

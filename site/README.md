@@ -8,7 +8,7 @@ The public site: the landing page, support, contact, privacy, changelog, and a
 
 Vercel, with **this folder as the project root**.
 
-1. Import `tapps/napkin-plus-plus` in Vercel.
+1. Import `tracyapps/napkin-plus-plus` in Vercel.
 2. Root Directory: `site`. Framework Preset: **Other**. Build command: empty.
    Output directory: `.` (the files are already static).
 3. Add `napkinplusplus.app` as the production domain and point the DNS records
@@ -70,6 +70,12 @@ Regenerate them with `npm run smoke && npm run shots`. The social card is
 rendered by `npm run og` into `assets/og.png` (1200×630).
 
 ## About the tone
+
+The footer ends with one randomly chosen line from `moreThan` in
+`assets/config.js` ("for developers with more API keys than …"). Add to the
+array freely; keep the entries plural and lowercase apart from proper nouns.
+`npm run site:check` fails if a page loses its footer slot or the list shrinks
+below a dozen.
 
 Lowercase headings, one accent, no user counts or testimonials. The app is free
 and made by one person; the site should sound like that. Support handles live in

@@ -188,6 +188,27 @@
       element.textContent = String(new Date().getFullYear());
     });
 
+    // "for developers with more API keys than ___." Pick one per page load and
+    // avoid repeating the previous pick when the browser allows sessionStorage.
+    var moreThan = document.querySelector("[data-more-than]");
+    var options = CFG.moreThan || [];
+    if (moreThan && options.length) {
+      var last = -1;
+      try {
+        last = Number(sessionStorage.getItem("napkin-more-than"));
+      } catch (error) {
+        last = -1;
+      }
+      var index = Math.floor(Math.random() * options.length);
+      if (options.length > 1 && index === last) index = (index + 1) % options.length;
+      try {
+        sessionStorage.setItem("napkin-more-than", String(index));
+      } catch (error) {
+        /* private mode; still random every load */
+      }
+      moreThan.textContent = options[index];
+    }
+
     document.querySelectorAll("[data-apps]").forEach(function (link) {
       if (CFG.elsewhere && CFG.elsewhere.apps) link.href = CFG.elsewhere.apps;
     });

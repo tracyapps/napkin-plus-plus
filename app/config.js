@@ -11,13 +11,13 @@
 
 module.exports = {
   PRODUCT: 'napkin++',
-  REPO: 'tapps/napkin-plus-plus',
-  REPO_URL: 'https://github.com/tapps/napkin-plus-plus',
+  REPO: 'tracyapps/napkin-plus-plus',
+  REPO_URL: 'https://github.com/tracyapps/napkin-plus-plus',
   SITE_URL: 'https://napkinplusplus.app',
   SUPPORT_URL: 'https://napkinplusplus.app/support',
-  DOWNLOAD_URL: 'https://github.com/tapps/napkin-plus-plus/releases/latest',
+  DOWNLOAD_URL: 'https://github.com/tracyapps/napkin-plus-plus/releases/latest',
   FEEDBACK_EMAIL: 'hello@napkinplusplus.app',
   DEVELOPER_URL: 'https://tapps.design',
-  RELEASES_API: 'https://api.github.com/repos/tapps/napkin-plus-plus/releases/latest',
+  RELEASES_API: 'https://api.github.com/repos/tracyapps/napkin-plus-plus/releases/latest',
   USER_AGENT: 'napkin++-app',
 };

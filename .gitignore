@@ -8,3 +8,7 @@ dist/
 docs/scratch/
 site/.vercel/
 .vercel/
+
+# signing material
+*.p12
+*.p12.*
