@@ -414,19 +414,17 @@
     const returnFocus = document.activeElement;
     closeContextMenu(false);
     host.innerHTML = renderContextItems(items);
-    host.style.visibility = 'hidden';
     host.classList.remove('hidden');
     const rect = host.getBoundingClientRect();
     const x = Math.min(event.clientX, window.innerWidth - rect.width - 10);
     const y = Math.min(event.clientY, window.innerHeight - rect.height - 10);
     host.style.left = Math.max(8, x) + 'px';
     host.style.top = Math.max(8, y) + 'px';
-    host.style.visibility = '';
     host.classList.toggle('flip-sub', event.clientX > window.innerWidth - 340);
     S.context = { items, payload: payload || {} };
     S.contextReturnFocus = returnFocus;
     const first = host.querySelector('.ctx-item:not(.has-sub):not(.disabled)');
-    if (first) first.focus();
+    if (first) first.focus({ preventScroll: true });
   }
 
   function closeContextMenu(restoreFocus) {

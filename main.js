@@ -1449,11 +1449,18 @@ async function runSmoke() {
   mainWindow.focus();
   mainWindow.webContents.focus();
   await delay(100);
-  const ctxState = await exec(`(() => {
+  const ctxState = await exec(`(async () => {
     const row = document.querySelector('[data-project-row][data-id="${projectId}"]');
     row.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 320, clientY: 300 }));
     const menu = document.querySelector('#ctx-menu');
-    const state = { open: !menu.classList.contains('hidden'), items: menu.querySelectorAll('[data-ctx-action]').length, focused: menu.contains(document.activeElement) };
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    const state = {
+      open: !menu.classList.contains('hidden'),
+      items: menu.querySelectorAll('[data-ctx-action]').length,
+      focused: menu.contains(document.activeElement),
+      activeElement: document.activeElement?.tagName,
+      windowFocused: document.hasFocus(),
+    };
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     return state;
   })()`);
