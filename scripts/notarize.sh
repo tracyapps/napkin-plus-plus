@@ -151,20 +151,32 @@ fi
 
 # --- sign ------------------------------------------------------------------
 
-# --deep is convenient for Electron's stock layout (Frameworks, Helpers). Apple
-# recommends signing inside-out instead; if notarization starts rejecting nested
-# code, switch to @electron/osx-sign, which walks the bundle properly.
-printf '• signing with hardened runtime and timestamp\n'
-codesign \
-  --force \
-  --deep \
-  --options runtime \
-  --timestamp \
-  --entitlements "$ENTITLEMENTS" \
-  --sign "$IDENTITY" \
-  "$APP_PATH"
+# --deep is deprecated and leaves loose binaries inside Electron Framework and
+# Squirrel ad-hoc signed. Notarization then fails with "Record not found" at
+# staple time. @electron/osx-sign walks the bundle inside-out instead.
+printf '• signing with Developer ID, hardened runtime and timestamp\n'
+MACOS_SIGN_IDENTITY="$IDENTITY" \
+ENTITLEMENTS_PLIST="$ENTITLEMENTS" \
+node "$SCRIPT_DIR/sign-mac.js" "$APP_PATH"
 
-codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+codesign --verify --deep --strict "$APP_PATH"
+printf '  signature verifies\n'
+
+printf '• checking every executable is Developer ID signed\n'
+NESTED_ISSUES="$(mktemp "${TMPDIR:-/tmp}/napkin-nested.XXXXXX")"
+find "$APP_PATH" -type f -perm +111 | while IFS= read -r file; do
+  info="$(codesign -dvv "$file" 2>&1 || true)"
+  printf '%s' "$info" | grep -q "Authority=Developer ID Application" || \
+    printf '  not Developer ID: %s\n' "${file#$APP_PATH/}"
+  printf '%s' "$info" | grep -q "Timestamp=" || \
+    printf '  no secure timestamp: %s\n' "${file#$APP_PATH/}"
+done > "$NESTED_ISSUES"
+if [ -s "$NESTED_ISSUES" ]; then
+  cat "$NESTED_ISSUES" >&2
+  rm -f "$NESTED_ISSUES"
+  fail "nested code is not notarization-ready; nothing was submitted."
+fi
+rm -f "$NESTED_ISSUES"
 
 # --- notarize --------------------------------------------------------------
 
@@ -179,15 +191,46 @@ printf '• zipping for submission: %s\n' "$SUBMISSION_ZIP"
 ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$SUBMISSION_ZIP"
 
 printf '• submitting to Apple (this waits for the verdict)\n'
-if ! xcrun notarytool submit "$SUBMISSION_ZIP" \
+SUBMIT_JSON="$WORK_DIR/submit.json"
+SUBMIT_ERR="$WORK_DIR/submit.err"
+set +e
+xcrun notarytool submit "$SUBMISSION_ZIP" \
   --apple-id "$APPLE_ID" \
   --team-id "$APPLE_TEAM_ID" \
   --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-  --wait; then
-  printf '\nerror: notarization failed. Re-run the submit above without --wait, or run\n' >&2
-  printf '  xcrun notarytool log <submission-id> --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD"\n' >&2
-  printf 'to see which nested binary or entitlement Apple objected to.\n' >&2
-  exit 1
+  --wait \
+  --output-format json \
+  --no-progress > "$SUBMIT_JSON" 2> "$SUBMIT_ERR"
+SUBMIT_CODE=$?
+set -e
+
+if [ "$SUBMIT_CODE" -ne 0 ]; then
+  cat "$SUBMIT_JSON" 2>/dev/null || true
+  cat "$SUBMIT_ERR" 2>/dev/null || true
+  fail "notarytool could not submit the archive. Nothing was stapled."
+fi
+if [ ! -s "$SUBMIT_JSON" ]; then
+  fail "notarytool returned no JSON; cannot confirm the verdict."
+fi
+
+NOTARY_ID="$(node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(String(j.id||""))' "$SUBMIT_JSON")"
+NOTARY_STATUS="$(node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));process.stdout.write(String(j.status||""))' "$SUBMIT_JSON")"
+printf '  id: %s\n  status: %s\n' "${NOTARY_ID:-unknown}" "${NOTARY_STATUS:-unknown}"
+
+if [ "$NOTARY_STATUS" != "Accepted" ]; then
+  printf '\n• Apple did not accept this build. Fetching the log\n'
+  LOG_JSON="$WORK_DIR/notary-log.json"
+  if xcrun notarytool log "$NOTARY_ID" \
+    --apple-id "$APPLE_ID" \
+    --team-id "$APPLE_TEAM_ID" \
+    --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+    "$LOG_JSON" >/dev/null 2>&1 && [ -s "$LOG_JSON" ]; then
+    node -e 'const fs=require("fs");try{console.log(JSON.stringify(JSON.parse(fs.readFileSync(process.argv[1],"utf8")),null,2))}catch(e){console.log(fs.readFileSync(process.argv[1],"utf8"))}' "$LOG_JSON"
+  else
+    printf '  Could not fetch the log. Run:\n'
+    printf '  xcrun notarytool log %s --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_SPECIFIC_PASSWORD"\n' "$NOTARY_ID"
+  fi
+  fail "notarization status was ${NOTARY_STATUS:-unknown}. Nothing was stapled."
 fi
 
 # --- staple and verify -----------------------------------------------------

@@ -23,12 +23,13 @@
     "shots": "electron scripts/make-site-shots.js",
     "package": "bash scripts/package-macos.sh",
     "test": "node --test tests/*.test.js",
-    "check": "node --check main.js && node --check preload.js && node --check app/config.js && node --check app/model.js && node --check app/search.js && node --check app/parse.js && node --check app/fold.js && node --check app/store.js && node --check app/dom.js && node --check app/detect.js && node --check app/net.js && node --check app/inspect.js && node --check app/previews.js && node --check app/updates.js && node --check app/feedback.js && node --check app/app.js && node --check app/quick.js && node --check site/assets/site.js && node --check site/assets/config.js && node --check site/api/contact.js",
+    "check": "node --check main.js && node --check preload.js && node --check app/config.js && node --check app/model.js && node --check app/search.js && node --check app/parse.js && node --check app/fold.js && node --check app/store.js && node --check app/dom.js && node --check app/detect.js && node --check app/net.js && node --check app/inspect.js && node --check app/previews.js && node --check app/updates.js && node --check app/feedback.js && node --check app/app.js && node --check app/quick.js && node --check scripts/sign-mac.js && node --check site/assets/site.js && node --check site/assets/config.js && node --check site/api/contact.js",
     "verify": "npm run check && npm test && npm run smoke",
     "site:check": "node scripts/check-site-links.mjs",
     "notarize:check": "bash scripts/notarize-check.sh"
   },
   "devDependencies": {
+    "@electron/osx-sign": "^2.7.2",
     "@electron/packager": "^20.3.0",
     "electron": "^45.2.1"
   }

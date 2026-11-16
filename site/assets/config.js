@@ -44,7 +44,7 @@
     // One is picked at random on each page load; keep them plural and lowercase
     // except for proper nouns.
     moreThan: [
-      "YubiKeys",
+      "desktop trinkets",
       "actual keys",
       "email accounts",
       "charging cables",
@@ -54,7 +54,7 @@
       "browser tabs",
       "side projects",
       "unfinished side projects",
-      "half-read READMEs",
+      ".md files",
       "SSH keys",
       "password reset emails",
       "OAuth apps",
@@ -73,7 +73,7 @@
       "open pull requests",
       "TODO comments",
       "abandoned branches",
-      "semver major versions",
+      "free t-shirts from conferences",
       "terminal windows",
       "localhost ports",
       "Postman collections",
@@ -88,7 +88,7 @@
       "notebooks",
       "business cards",
       "Node versions",
-      "one-more microservices",
+      "test emails",
       "cron jobs they forgot about",
       "README badges",
       "draft blog posts",
@@ -96,14 +96,14 @@
       "magic links",
       "expiring certificates",
       "design tokens",
-      "Figma files named final",
+      "USB cables",
       "calendar invites",
       "screenshots of error messages",
       "unopened Apple developer emails",
       ".DS_Store files",
       "keyboard shortcuts they've customized",
-      "VS Code extensions",
-      "bookmarked docs",
+      "conference swag bags",
+      "stickers on their laptop",
       "pinned Slack messages"
     ],
   };

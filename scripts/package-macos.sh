@@ -65,11 +65,24 @@ fi
 
 SIGNED="ad-hoc"
 IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
+NOTARY_VARS=0
+[ -n "${APPLE_ID:-}" ] && NOTARY_VARS=$((NOTARY_VARS + 1))
+[ -n "${APPLE_APP_SPECIFIC_PASSWORD:-}" ] && NOTARY_VARS=$((NOTARY_VARS + 1))
+[ -n "${APPLE_TEAM_ID:-}" ] && NOTARY_VARS=$((NOTARY_VARS + 1))
+
 if [ "${NAPKIN_SKIP_SIGN:-0}" = "1" ]; then
   SIGNED="unsigned"
   echo "• skipping signing (NAPKIN_SKIP_SIGN=1)"
-elif [ -n "${APPLE_ID:-}" ] && [ -n "${APPLE_APP_SPECIFIC_PASSWORD:-}" ] && [ -n "${APPLE_TEAM_ID:-}" ] \
-  && printf '%s' "$IDENTITIES" | grep -q "Developer ID Application"; then
+elif [ "$NOTARY_VARS" -gt 0 ] && [ "$NOTARY_VARS" -lt 3 ]; then
+  echo "error: set all of APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD and APPLE_TEAM_ID, or none." >&2
+  echo "       npm run notarize:check says what is missing." >&2
+  exit 1
+elif [ "$NOTARY_VARS" -eq 3 ]; then
+  if ! printf '%s' "$IDENTITIES" | grep -q "Developer ID Application"; then
+    echo "error: Apple credentials are set, but no Developer ID Application identity is in the keychain." >&2
+    echo "       npm run notarize:check explains how to get one." >&2
+    exit 1
+  fi
   echo "• signing with Developer ID and notarizing"
   bash scripts/notarize.sh "$APP"
   SIGNED="notarized"

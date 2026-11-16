@@ -256,8 +256,9 @@ bash scripts/notarize.sh "dist/napkin++-darwin-arm64/napkin++.app"
    `Developer ID Application` certificate in the keychain.
 3. Creates `scripts/entitlements.mac.plist` if it is missing (it is committed, so
    normally it is not).
-4. Signs with `codesign --force --deep --options runtime --timestamp
-   --entitlements …`.
+4. Signs inside-out with `@electron/osx-sign` (Developer ID, hardened runtime,
+   timestamp, `scripts/entitlements.mac.plist`) and verifies every executable in
+   the bundle carries that signature.
 5. Zips the bundle with `ditto`, then runs `xcrun notarytool submit … --wait`.
 6. Staples the ticket (`xcrun stapler staple`) and validates it.
 7. Runs `spctl --assess` so a rejection fails the script instead of your users.
@@ -367,7 +368,7 @@ If you later add Squirrel.Mac:
 | Universal zip runs only on one architecture | The `@electron/universal` stitch failed or produced one slice | `lipo -archs "napkin++.app/Contents/MacOS/napkin++"` and the same on `Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework`. Both must list `x86_64 arm64`. The workflow checks this. |
 | `shasum -c` fails | Partial download, proxy rewriting, or a stale asset | Re-download. Never publish past a checksum mismatch. |
 | notarytool returns `Invalid` | Unsigned nested binary, missing hardened runtime or timestamp, or an unjustified entitlement | `xcrun notarytool log <submission-id> --apple-id … --team-id … --password …`. Re-run `scripts/notarize.sh` after fixing. |
-| `stapler: ticket not found` | Stapling before notarization finished, or a different bundle id was notarized | Re-run the script; it waits for the verdict before stapling. |
+| `stapler: ticket not found` | Stapling before notarization finished, or a different bundle id was notarized | Re-run the script; it waits for the verdict before stapling. See [NOTARIZATION.md](NOTARIZATION.md#troubleshooting) for the `Record not found` case, which is usually ad-hoc nested code. |
 | Release has no assets | The build matrix failed or artifact names changed | Check the `build (arch)` jobs. Asset names come from `VERSION` and `ARCH`; both are printed in the log. |
 | Smoke test passes locally, fails in CI | The runner had no usable window session, or Electron failed to launch (partial `npm ci`) | Download the `smoke-screenshots` artifact and read the log. The smoke run uses its own throwaway vault, so a real vault is never the cause. |
 | Pre-release was published as "Latest" | Tag lacked a hyphen | Use `v1.0.0-rc.1` style tags; the workflow marks hyphenated tags as pre-releases. |

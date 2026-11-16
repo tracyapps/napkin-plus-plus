@@ -86,6 +86,10 @@ Not your Apple ID password. Apple requires a separate password for each tool.
 4. Copy the `xxxx-xxxx-xxxx-xxxx` value. It is shown once; if you lose it,
    revoke it and make another.
 
+The **name** you give the password is only a label in Apple's list. Renaming it
+to `napkin-plus-plus notarytool` changes nothing about authentication, and it is
+not related to a stapling error.
+
 Two-factor authentication must be on for the Apple ID (it almost certainly is).
 
 ## 4. Build and notarize locally
@@ -110,11 +114,14 @@ NAPKIN_ARCH=universal npm run package
 What happens, in order:
 
 1. `@electron/packager` builds the `.app` (universal = arm64 + x64).
-2. `scripts/notarize.sh` signs `napkin++.app` and every nested framework/helper
-   with your Developer ID, `--options runtime`, and
-   `scripts/entitlements.mac.plist`.
+2. `scripts/notarize.sh` signs `napkin++.app` inside-out with
+   `@electron/osx-sign` (Developer ID, hardened runtime, timestamp,
+   `scripts/entitlements.mac.plist`) and checks that every executable in the
+   bundle carries that signature before uploading anything.
 3. It zips the bundle with `ditto` and submits it with
-   `xcrun notarytool submit --wait`.
+   `xcrun notarytool submit --wait`, reading the JSON verdict. Anything other
+   than `Accepted` stops the script and prints Apple's reason from the notary
+   log.
 4. It staples the ticket (`xcrun stapler staple`) so the app validates offline.
 5. It runs `spctl --assess`; a rejection fails the script.
 6. The package script zips the stapled app and writes the checksum.
@@ -205,6 +212,7 @@ says whether notarization ran or was skipped.
 | `notarytool` returns `Invalid` | Usually an unsigned nested binary, missing hardened runtime, or a forbidden entitlement | `xcrun notarytool log <id> --apple-id … --team-id … --password …` and read the JSON |
 | `401 Unauthorized` / `authentication failed` | Apple ID email, or the account password instead of the app-specific password | Make a new app-specific password; use the email, not a nickname |
 | `The specified item could not be found in the keychain` during CI import | Wrong `.p12` password, or a `.p12` exported without the private key | Re-export from **My Certificates** with both items selected |
+| `CloudKit query … failed due to "Record not found"` / `Error 65` when stapling | Apple has no ticket for that exact build. The usual cause on Electron apps is `codesign --deep` leaving loose binaries (`libffmpeg.dylib`, `libvk_swiftshader.dylib`, Squirrel's `ShipIt`) ad-hoc signed, so notarization was rejected even though signing looked valid. | `notarize.sh` now signs with `@electron/osx-sign` and refuses to submit if any executable lacks a Developer ID signature or timestamp. Rerun it; if it still fails, the status and Apple's log are printed. |
 | `stapler: ticket not found` | Stapling before the submission finished, or notarizing a different bundle | Let `notarytool --wait` finish; staple the exact `.app` that was submitted |
 | `spctl` rejects a notarized build | Ticket not stapled, or the build was modified after signing | Re-run `notarize.sh`; never edit the bundle after signing |
 | Notarization passes, but the app is slow to launch first time | Gatekeeper is checking a large universal bundle | Normal once; subsequent launches are cached |
