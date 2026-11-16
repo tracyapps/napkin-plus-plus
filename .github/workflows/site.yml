@@ -1,0 +1,106 @@
+name: Site
+
+# Deploys site/ to Vercel, but only when the Vercel secrets exist. Without them
+# the workflow still runs the internal-link check and then says so loudly instead
+# of failing red on a repo that has not been wired to Vercel yet.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/site.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      has_site: ${{ steps.check.outputs.has_site }}
+      deploy: ${{ steps.check.outputs.deploy }}
+      reason: ${{ steps.check.outputs.reason }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Decide whether there is anything to deploy
+        id: check
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          HAS_SITE="false"
+          # sed reads to EOF on purpose: pairing find with grep -q under pipefail
+          # would fail when grep exits early and find gets SIGPIPE.
+          if [ -d site ] && [ -n "$(find site -type f -name '*.html' 2>/dev/null | sed -n '1p')" ]; then
+            HAS_SITE="true"
+          fi
+
+          REASON=""
+          if [ "$HAS_SITE" != "true" ]; then
+            REASON="site/ has no HTML yet - nothing to deploy"
+          elif [ -z "${VERCEL_TOKEN:-}" ] || [ -z "${VERCEL_ORG_ID:-}" ] || [ -z "${VERCEL_PROJECT_ID:-}" ]; then
+            REASON="VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID are not all configured"
+          fi
+
+          if [ "$HAS_SITE" = "true" ] && [ -z "$REASON" ]; then
+            DEPLOY="true"
+          else
+            DEPLOY="false"
+          fi
+
+          echo "has_site=${HAS_SITE}" >> "$GITHUB_OUTPUT"
+          echo "deploy=${DEPLOY}" >> "$GITHUB_OUTPUT"
+          echo "reason=${REASON}" >> "$GITHUB_OUTPUT"
+          echo "has_site=${HAS_SITE} deploy=${DEPLOY} reason=${REASON}"
+
+  linkcheck:
+    name: internal links
+    needs: preflight
+    if: needs.preflight.outputs.has_site == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Check that every internal link resolves to a file
+        run: node scripts/check-site-links.mjs
+
+  deploy:
+    name: deploy to Vercel
+    needs: [preflight, linkcheck]
+    if: needs.preflight.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Deploy site/ to production
+        run: npx --yes vercel@latest deploy site --prod --yes
+
+  skipped:
+    name: deploy skipped
+    needs: preflight
+    if: needs.preflight.outputs.deploy != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Explain why nothing was deployed
+        run: |
+          echo "::notice::Vercel deploy skipped - ${{ needs.preflight.outputs.reason }}"

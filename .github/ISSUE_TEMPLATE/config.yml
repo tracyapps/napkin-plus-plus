@@ -1,0 +1,11 @@
+# Templates only: a blank issue would miss the version and macOS details that
+# every useful bug report needs. Discussions are intentionally not linked/enabled
+# for this repo - the owner does not monitor them.
+blank_issues_enabled: false
+contact_links:
+  - name: tapps.design
+    url: https://tapps.design
+    about: Everything tapps builds, including napkin++.
+  - name: Support
+    url: https://napkinplusplus.app/support
+    about: Questions, licensing, or anything that is not a bug report.

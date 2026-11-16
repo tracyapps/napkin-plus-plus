@@ -1,0 +1,60 @@
+name: Feature request
+description: Suggest a capability or a change in how napkin++ works.
+title: '[feature] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        napkin++ is deliberately small: local-first, macOS only, one vault, no
+        account. Requests that keep it that way are easiest to accept.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to get done that napkin++ makes awkward today?
+      placeholder: I keep four projects with the same staging database and retype the URL every time.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like
+      description: The behaviour you want, described from the outside.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered
+      description: Other tools, scripts, or workarounds you use now.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Projects and folders
+        - Accounts and typed fields
+        - Environment variables
+        - Notes and snippets
+        - Search and the palette
+        - Quick window and global shortcut
+        - Vault, storage and files
+        - Packaging and updates
+        - Docs
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Mockups, references, links. No credentials, please.
+    validations:
+      required: false

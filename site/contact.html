@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-theme-pref="system" data-accent="ember">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>contact — napkin++</title>
+    <meta
+      name="description"
+      content="write in about napkin++: a bug, a rough edge, an idea, or a plain hello. it reaches one person. feedback and bug reports are also built into the app."
+    />
+    <link rel="canonical" href="https://napkinplusplus.app/contact.html" />
+    <meta name="theme-color" content="#f4efe7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#131211" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="assets/icon-128.png" type="image/png" sizes="128x128" />
+    <link rel="apple-touch-icon" href="assets/icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="napkin++" />
+    <meta property="og:title" content="contact — napkin++" />
+    <meta property="og:description" content="a bug, a rough edge, an idea, or a plain hello. it reaches one person." />
+    <meta property="og:url" content="https://napkinplusplus.app/contact.html" />
+    <meta property="og:image" content="https://napkinplusplus.app/assets/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="contact — napkin++" />
+    <meta name="twitter:description" content="a bug, a rough edge, an idea, or a plain hello. it reaches one person." />
+    <meta name="twitter:image" content="https://napkinplusplus.app/assets/og.png" />
+
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem("napkin-theme");
+          if (pref !== "light" && pref !== "dark" && pref !== "system") pref = "system";
+          var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.setAttribute("data-theme", pref === "system" ? (dark ? "dark" : "light") : pref);
+          document.documentElement.setAttribute("data-theme-pref", pref);
+          var accent = localStorage.getItem("napkin-accent");
+          if (["ember", "moss", "ink", "plum"].indexOf(accent) < 0) accent = "ember";
+          document.documentElement.setAttribute("data-accent", accent);
+        } catch (error) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="assets/site.css" />
+    <script src="assets/config.js" defer></script>
+    <script src="assets/site.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">skip to content</a>
+
+    <header class="site-head">
+      <div class="wrap head-in">
+        <a class="brand" href="index.html" aria-label="napkin++ home">
+          <img src="assets/icon-128.png" width="128" height="128" alt="" />
+          <span>napkin<span class="plus">++</span></span>
+        </a>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+          <a href="index.html#what">what it does</a>
+          <a href="index.html#demo">demo</a>
+          <a href="support.html">support</a>
+          <a href="changelog.html">changelog</a>
+          <a class="nav-download" href="https://github.com/tapps/napkin-plus-plus/releases/latest" data-download>download for macOS</a>
+        </nav>
+        <div class="head-actions">
+          <button
+            class="theme-btn"
+            type="button"
+            data-theme-toggle
+            aria-label="theme: system. switch to light."
+            title="theme: system — click for light"
+          >
+            <svg class="i-system" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="7.5" />
+              <path d="M12 4.5v15" />
+              <path d="M12 4.5a7.5 7.5 0 0 1 0 15" />
+            </svg>
+            <svg class="i-light" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+            </svg>
+            <svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.2 14.8A8.5 8.5 0 0 1 9.2 3.8a8.5 8.5 0 1 0 11 11Z" />
+            </svg>
+            <span class="theme-label" data-theme-label>system</span>
+          </button>
+          <a class="btn btn-primary btn-sm" href="https://github.com/tapps/napkin-plus-plus/releases/latest" data-download>download</a>
+          <button
+            class="nav-toggle"
+            type="button"
+            data-nav-toggle
+            aria-expanded="false"
+            aria-controls="site-nav"
+            aria-label="open menu"
+          >
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="page-head">
+        <div class="wrap narrow-wide">
+          <p class="kicker">contact</p>
+          <h1>write in.</h1>
+          <p class="lede">
+            a bug, a rough edge, an idea, or a plain hello. it reaches one person — the one who made the app.
+          </p>
+        </div>
+      </section>
+
+      <section class="page-body">
+        <div class="wrap narrow-wide">
+          <div class="contact-layout">
+            <div>
+              <form
+                class="form"
+                action="/api/contact"
+                method="post"
+                data-contact-form
+              >
+                <div class="field-row">
+                  <div class="field">
+                    <label for="contact-name">name</label>
+                    <input id="contact-name" name="name" type="text" autocomplete="name" required />
+                  </div>
+                  <div class="field">
+                    <label for="contact-email">email</label>
+                    <input id="contact-email" name="email" type="email" autocomplete="email" inputmode="email" required />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label for="contact-topic">topic</label>
+                  <select id="contact-topic" name="topic" required>
+                    <option value="">choose one</option>
+                    <option value="bug report">bug report</option>
+                    <option value="idea">idea / feature</option>
+                    <option value="support question">support question</option>
+                    <option value="privacy">privacy</option>
+                    <option value="something else">something else</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label for="contact-message">message</label>
+                  <textarea
+                    id="contact-message"
+                    name="message"
+                    required
+                    placeholder="what happened, what you expected, or what you're thinking."
+                  ></textarea>
+                </div>
+
+                <div class="hp" aria-hidden="true">
+                  <label for="contact-website">website</label>
+                  <input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <div class="form-foot">
+                  <button class="btn btn-primary" type="submit">send message</button>
+                  <span class="fine">
+                    goes to <a href="mailto:hello@napkinplusplus.app" data-email><span data-email-text>hello@napkinplusplus.app</span></a>.
+                    used to reply, nothing else. <a href="privacy.html">privacy</a>.
+                  </span>
+                </div>
+              </form>
+
+              <p class="form-status" role="status" aria-live="polite" data-form-status></p>
+
+              <div class="fallback" data-contact-fallback hidden>
+                <h2>the form couldn't send.</h2>
+                <p>
+                  your message is still above. this link opens your mail app with everything filled in — send it
+                  from there and it reaches the same inbox.
+                </p>
+                <a class="mailto" href="mailto:hello@napkinplusplus.app" data-fallback-link>email hello@napkinplusplus.app</a>
+              </div>
+
+              <div class="success" data-contact-success hidden>
+                <span class="mark" aria-hidden="true">✓</span>
+                <h2>message sent.</h2>
+                <p>thank you — i read these. a reply comes from a person, not a robot.</p>
+                <p><a href="index.html">back to napkin++</a></p>
+              </div>
+
+              <noscript>
+                <p class="form-status">
+                  javascript is off, so the form won't send. email
+                  <a href="mailto:hello@napkinplusplus.app">hello@napkinplusplus.app</a> instead.
+                </p>
+              </noscript>
+            </div>
+
+            <aside class="contact-aside" aria-label="other ways to reach me">
+              <div class="aside-block">
+                <span class="aside-kicker">faster inside the app</span>
+                <h2>feedback, built in.</h2>
+                <p>
+                  napkin++ has feedback and bug reports built in. if you're already in the app, use that — it's
+                  the shortest path.
+                </p>
+                <p>what you did, what happened, what you expected. a screenshot helps.</p>
+              </div>
+
+              <div class="aside-block">
+                <span class="aside-kicker">email</span>
+                <h2><a href="mailto:hello@napkinplusplus.app" data-email><span data-email-text>hello@napkinplusplus.app</span></a></h2>
+                <p>no list, no auto-reply, no ticket number. just a person.</p>
+              </div>
+
+              <div class="aside-block">
+                <span class="aside-kicker">before you write</span>
+                <p>
+                  the <a href="changelog.html">changelog</a> says what changed, and
+                  <a href="privacy.html">privacy</a> says what is and isn't collected.
+                </p>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-foot">
+      <div class="wrap">
+        <div class="foot-top">
+          <div class="foot-brand">
+            <a class="brand" href="index.html" aria-label="napkin++ home">
+              <img src="assets/icon-128.png" width="128" height="128" alt="" />
+              <span>napkin<span class="plus">++</span></span>
+            </a>
+            <p>one place per project. a local-first dossier for macOS, made by one person.</p>
+            <a class="foot-mail" href="mailto:hello@napkinplusplus.app" data-email>hello@napkinplusplus.app</a>
+          </div>
+          <div class="foot-cols">
+            <div>
+              <h2 class="foot-label">app</h2>
+              <ul>
+                <li><a href="https://github.com/tapps/napkin-plus-plus/releases/latest" data-download>download</a></li>
+                <li><a href="index.html#demo">demo</a></li>
+                <li><a href="changelog.html">changelog</a></li>
+                <li><a href="privacy.html">privacy</a></li>
+              </ul>
+            </div>
+            <div>
+              <h2 class="foot-label">help</h2>
+              <ul>
+                <li><a href="support.html">support</a></li>
+                <li><a href="contact.html">contact</a></li>
+                <li><a href="mailto:hello@napkinplusplus.app" data-email>email</a></li>
+              </ul>
+            </div>
+            <div>
+              <h2 class="foot-label">elsewhere</h2>
+              <ul>
+                <li><a href="https://gradhuely.com" data-apps>other apps</a></li>
+                <li><a href="https://tapps.design" data-developer>tapps.design</a></li>
+                <li><a href="https://github.com/tapps/napkin-plus-plus" data-github>github</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="foot-bottom">
+          <span>© <span data-year>2026</span> tapps</span>
+          <span>no cookies. no trackers. no telemetry.</span>
+          <span>made on a mac</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

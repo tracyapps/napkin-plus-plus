@@ -1,0 +1,34 @@
+{
+  "name": "napkin-plus-plus",
+  "productName": "napkin++",
+  "version": "1.0.0",
+  "private": true,
+  "author": "tapps",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "description": "Local-first project dossier for developers: keys, env vars, accounts, links, notes and snippets.",
+  "homepage": "https://napkinplusplus.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tapps/napkin-plus-plus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tapps/napkin-plus-plus/issues"
+  },
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "smoke": "NAPKIN_OFFLINE=1 NAPKIN_DETECT_FIXTURE=tests/fixtures/detect.json NAPKIN_SMOKE=1 electron .",
+    "icons": "electron scripts/make-icons.js",
+    "og": "electron scripts/make-og.js",
+    "shots": "electron scripts/make-site-shots.js",
+    "package": "bash scripts/package-macos.sh",
+    "test": "node --test tests/*.test.js",
+    "check": "node --check main.js && node --check preload.js && node --check app/config.js && node --check app/model.js && node --check app/search.js && node --check app/parse.js && node --check app/fold.js && node --check app/store.js && node --check app/dom.js && node --check app/detect.js && node --check app/net.js && node --check app/inspect.js && node --check app/previews.js && node --check app/updates.js && node --check app/feedback.js && node --check app/app.js && node --check app/quick.js && node --check site/assets/site.js && node --check site/assets/config.js && node --check site/api/contact.js",
+    "verify": "npm run check && npm test && npm run smoke",
+    "site:check": "node scripts/check-site-links.mjs"
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^45.2.1"
+  }
+}

@@ -1,0 +1,13 @@
+# Normalise line endings in the repo; git decides text vs binary for everything
+# not listed below.
+* text=auto eol=lf
+
+# Real binaries - never diff, merge or convert these.
+*.png binary
+*.icns binary
+*.jpg binary
+*.jpeg binary
+*.zip binary
+
+# The lockfile is generated; collapse it in diffs and keep it out of language stats.
+package-lock.json linguist-generated=true -diff

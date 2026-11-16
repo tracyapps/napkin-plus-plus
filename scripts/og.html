@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>napkin++ — social card</title>
+    <style>
+      :root {
+        --bg: #f4efe7;
+        --panel: #fffdfa;
+        --ink: #1f1c18;
+        --ink-2: #6a6055;
+        --line: #e0d5c6;
+        --accent: #b2531f;
+        --mono: ui-monospace, 'SF Mono', Menlo, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .card {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        padding: 64px 72px 54px;
+        display: flex;
+        flex-direction: column;
+        background:
+          radial-gradient(900px 420px at 88% -10%, rgba(178, 83, 31, 0.12), transparent 70%),
+          radial-gradient(700px 500px at -10% 110%, rgba(92, 122, 79, 0.1), transparent 70%),
+          var(--bg);
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.5;
+        background-image: repeating-linear-gradient(
+            0deg,
+            rgba(31, 28, 24, 0.025) 0 1px,
+            transparent 1px 4px
+          ),
+          repeating-linear-gradient(90deg, rgba(31, 28, 24, 0.018) 0 1px, transparent 1px 5px);
+        pointer-events: none;
+      }
+      .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        font: 600 25px/1 var(--mono);
+        letter-spacing: -0.02em;
+        position: relative;
+      }
+      .brand span {
+        color: var(--accent);
+      }
+      .brand em {
+        font: 500 12px/1 var(--mono);
+        font-style: normal;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+      }
+      h1 {
+        position: relative;
+        margin: 54px 0 0;
+        max-width: 640px;
+        font-size: 76px;
+        line-height: 0.98;
+        letter-spacing: -0.045em;
+        font-weight: 650;
+      }
+      h1 b {
+        color: var(--accent);
+        font-weight: 650;
+      }
+      .sub {
+        position: relative;
+        margin-top: 22px;
+        max-width: 520px;
+        font-size: 21px;
+        line-height: 1.45;
+        color: var(--ink-2);
+        letter-spacing: -0.01em;
+      }
+      .foot {
+        position: relative;
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font: 500 14px/1 var(--mono);
+        color: var(--ink-2);
+        letter-spacing: 0.04em;
+      }
+      .foot i {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--accent);
+        opacity: 0.7;
+      }
+      .stack {
+        position: absolute;
+        top: 92px;
+        right: 66px;
+        width: 372px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .tile {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        background: var(--panel);
+        box-shadow: 0 12px 30px rgba(52, 38, 24, 0.08);
+      }
+      .thumb {
+        flex: none;
+        width: 84px;
+        height: 56px;
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        font: 600 18px/1 var(--mono);
+        color: #fffdf8;
+        background: linear-gradient(135deg, #8b3c11, #b2531f);
+      }
+      .thumb.moss {
+        background: linear-gradient(135deg, #44603a, #6d8a5f);
+      }
+      .thumb.ink {
+        background: linear-gradient(135deg, #2f4c6b, #4f7396);
+      }
+      .thumb.plum {
+        background: linear-gradient(135deg, #5f3b59, #8a5f81);
+      }
+      .lines {
+        flex: 1;
+        min-width: 0;
+      }
+      .lines b {
+        display: block;
+        height: 9px;
+        border-radius: 4px;
+        background: #2b2620;
+        opacity: 0.75;
+        width: 68%;
+      }
+      .lines i {
+        display: block;
+        height: 6px;
+        margin-top: 8px;
+        border-radius: 3px;
+        background: #b4a493;
+        width: 46%;
+      }
+      .lines u {
+        display: block;
+        height: 5px;
+        margin-top: 7px;
+        border-radius: 3px;
+        background: #d8cbbb;
+        width: 78%;
+      }
+      .tile.offset {
+        transform: translateX(-26px);
+      }
+      .tile.more {
+        transform: translateX(-8px);
+        opacity: 0.9;
+      }
+      .dot {
+        margin-left: auto;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="grain"></div>
+      <div class="brand">napkin<span>++</span><em>local dossier</em></div>
+
+      <h1>Every project,<br />on one <b>napkin</b>.</h1>
+      <p class="sub">
+        Keys, env vars, logins, links and notes. One local dossier per project —
+        searchable in a keystroke, recognisable at a glance.
+      </p>
+
+      <div class="stack">
+        <div class="tile offset">
+          <div class="thumb">LA</div>
+          <div class="lines"><b></b><i></i><u></u></div>
+          <span class="dot"></span>
+        </div>
+        <div class="tile">
+          <div class="thumb moss">FN</div>
+          <div class="lines"><b style="width: 54%"></b><i style="width: 62%"></i><u style="width: 48%"></u></div>
+        </div>
+        <div class="tile more">
+          <div class="thumb ink">AT</div>
+          <div class="lines"><b style="width: 74%"></b><i style="width: 38%"></i><u style="width: 66%"></u></div>
+        </div>
+        <div class="tile" style="opacity: 0.75">
+          <div class="thumb plum">SB</div>
+          <div class="lines"><b style="width: 48%"></b><i style="width: 56%"></i><u style="width: 40%"></u></div>
+        </div>
+      </div>
+
+      <div class="foot">napkinplusplus.app <i></i> macOS <i></i> free <i></i> local-first</div>
+    </div>
+  </body>
+</html>

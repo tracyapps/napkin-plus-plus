@@ -1,0 +1,160 @@
+name: CI
+
+# Runs on every push to main and on every pull request. Two independent jobs:
+#   verify  - syntax gates, unit tests, and a real Electron boot with screenshots
+#   package - a full `npm run package` build that proves the shipped bundle is sane
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch or PR cancels the run it supersedes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  verify:
+    name: check + test + smoke
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax gates
+        run: npm run check
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Runtime dependency audit
+        run: npm audit --omit=dev
+
+      - name: Site links
+        run: npm run site:check
+
+      - name: Smoke test (real boot)
+        env:
+          NAPKIN_SHOT_DIR: ${{ runner.temp }}/shots
+        run: |
+          set -euo pipefail
+          mkdir -p "$NAPKIN_SHOT_DIR"
+          npm run smoke
+
+      # Keep the screenshots even when the smoke test fails: they are the most
+      # useful evidence we have for a window that opened but rendered wrong.
+      - name: Upload smoke screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-screenshots
+          path: ${{ runner.temp }}/shots
+          if-no-files-found: warn
+          retention-days: 14
+
+  package:
+    name: package + verify bundle
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package the app
+        run: npm run package
+
+      - name: Verify zip artifact
+        run: |
+          set -euo pipefail
+          ZIP="dist/napkin++.zip"
+          if [ ! -f "$ZIP" ]; then
+            echo "::error::$ZIP was not produced by npm run package"
+            exit 1
+          fi
+          # Capture first: grep -q closing the pipe early would trip pipefail.
+          ZIP_LIST="$(unzip -l "$ZIP")"
+          case "$ZIP_LIST" in
+            *"napkin++.app/Contents/Info.plist"*) ;;
+            *)
+              echo "::error::$ZIP does not contain a complete napkin++.app bundle"
+              exit 1
+              ;;
+          esac
+          echo "zip: $(du -h "$ZIP" | cut -f1)"
+          echo "sha256: $(shasum -a 256 "$ZIP" | cut -d' ' -f1)"
+
+      - name: Verify bundle identity and version
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          apps=(dist/napkin++-darwin-*/napkin++.app)
+          if [ ${#apps[@]} -ne 1 ]; then
+            echo "::error::expected exactly one dist/napkin++-darwin-*/napkin++.app, found ${#apps[@]}"
+            printf '  %s\n' "${apps[@]}"
+            exit 1
+          fi
+          APP="${apps[0]}"
+          PLIST="$APP/Contents/Info.plist"
+
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          SHORT_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST")"
+          BUILD_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")"
+          BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")"
+
+          echo "package.json version : $PKG_VERSION"
+          echo "CFBundleShortVersionString : $SHORT_VERSION"
+          echo "CFBundleVersion      : $BUILD_VERSION"
+          echo "CFBundleIdentifier   : $BUNDLE_ID"
+
+          if [ "$SHORT_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Info.plist version ($SHORT_VERSION) does not match package.json ($PKG_VERSION)"
+            exit 1
+          fi
+          if [ "$BUNDLE_ID" != "com.local.napkin-plus-plus" ]; then
+            echo "::error::unexpected bundle id $BUNDLE_ID (want com.local.napkin-plus-plus)"
+            exit 1
+          fi
+          if [ ! -f "$APP/Contents/Resources/napkin.icns" ]; then
+            echo "::error::napkin.icns is missing from the bundle (icon rename step did not run)"
+            exit 1
+          fi
+          if ! cmp -s assets/icon.icns "$APP/Contents/Resources/napkin.icns"; then
+            echo "::error::bundle icon does not match assets/icon.icns"
+            exit 1
+          fi
+
+          codesign --verify --deep --strict --verbose=2 "$APP"
+
+      - name: Upload packaged zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: napkin-plus-plus-zip
+          path: dist/napkin++.zip
+          if-no-files-found: error
+          retention-days: 7

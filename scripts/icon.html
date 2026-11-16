@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        width: 1024px;
+        height: 1024px;
+        margin: 0;
+        background: transparent;
+        overflow: hidden;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      }
+
+      body.tray {
+        width: 64px;
+        height: 64px;
+      }
+
+      /* Paper tints. Each is a colourway, not a different drawing: the sheet,
+         the fold and the ink move together. */
+      body[data-tint="paper"] {
+        --t-hi: #fffdfa;
+        --t-mid: #f7f1e7;
+        --t-lo: #e8ddca;
+        --t-ink: #1f1c18;
+        --t-fold: #e2d3be;
+        --t-acc: #b4531f;
+        --d-hi: #3d362d;
+        --d-mid: #262119;
+        --d-lo: #191613;
+        --d-ink: #f6efe2;
+        --d-fold: #3d362e;
+        --d-acc: #ef8b52;
+      }
+
+      body[data-tint="ember"] {
+        --t-hi: #fff6ec;
+        --t-mid: #f8e4cd;
+        --t-lo: #eccaa4;
+        --t-ink: #3a2314;
+        --t-fold: #e3bd96;
+        --t-acc: #b8501a;
+        --d-hi: #4a3121;
+        --d-mid: #332014;
+        --d-lo: #241509;
+        --d-ink: #ffe7cd;
+        --d-fold: #4a3222;
+        --d-acc: #f09a5c;
+      }
+
+      body[data-tint="moss"] {
+        --t-hi: #f9fbf3;
+        --t-mid: #e9f0dd;
+        --t-lo: #d4e2c3;
+        --t-ink: #24301f;
+        --t-fold: #c3d5ae;
+        --t-acc: #557348;
+        --d-hi: #2f3a28;
+        --d-mid: #212a1b;
+        --d-lo: #161d12;
+        --d-ink: #e9f3dc;
+        --d-fold: #2f3a28;
+        --d-acc: #a9c99a;
+      }
+
+      body[data-tint="ink"] {
+        --t-hi: #f2f5f8;
+        --t-mid: #dfe7ee;
+        --t-lo: #c6d3de;
+        --t-ink: #16202b;
+        --t-fold: #b9cad8;
+        --t-acc: #35506b;
+        --d-hi: #2e3a47;
+        --d-mid: #212a35;
+        --d-lo: #161d26;
+        --d-ink: #e6eef6;
+        --d-fold: #2e3a47;
+        --d-acc: #9dc0e6;
+      }
+
+      body[data-tint="plum"] {
+        --t-hi: #fdf6fa;
+        --t-mid: #f1e2ec;
+        --t-lo: #dfc7d8;
+        --t-ink: #32202b;
+        --t-fold: #d5b9cb;
+        --t-acc: #6f4a68;
+        --d-hi: #3b2735;
+        --d-mid: #2a1b26;
+        --d-lo: #1c121a;
+        --d-ink: #f7e6f1;
+        --d-fold: #3b2735;
+        --d-acc: #d3a5cb;
+      }
+
+      body[data-tint="graphite"] {
+        --t-hi: #f7f7f7;
+        --t-mid: #e6e6e6;
+        --t-lo: #cfcfcf;
+        --t-ink: #1c1c1c;
+        --t-fold: #c2c2c2;
+        --t-acc: #4a4a4a;
+        --d-hi: #2e2e2e;
+        --d-mid: #1f1f1f;
+        --d-lo: #131313;
+        --d-ink: #eeeeee;
+        --d-fold: #2e2e2e;
+        --d-acc: #b0b0b0;
+      }
+
+      .stage {
+        position: relative;
+        width: 800px;
+        height: 800px;
+      }
+
+      .sheet {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        border-radius: 8px;
+        /* A napkin dropped on the desk, not a straight-on icon. */
+        transform: rotate(-4.5deg);
+        background:
+          radial-gradient(140% 120% at 55% 28%, rgba(255, 255, 255, 0.5), transparent 56%),
+          linear-gradient(135deg, var(--t-hi) 0%, var(--t-mid) 58%, var(--t-lo) 100%);
+        box-shadow:
+          inset 2px 2px 0 rgba(255, 255, 255, 0.66),
+          inset -1px -2px 0 rgba(106, 80, 51, 0.22),
+          0 26px 30px rgba(46, 32, 19, 0.2),
+          0 9px 11px rgba(46, 32, 19, 0.16);
+        clip-path: polygon(
+          1% 0.4%,
+          99% 0%,
+          100% 98.6%,
+          98.4% 100%,
+          0.7% 99.2%,
+          0% 1.5%
+        );
+      }
+
+      /* folded corner — the one napkin cue */
+      .fold {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 152px;
+        height: 152px;
+        background: linear-gradient(225deg, var(--t-fold) 0 49.5%, transparent 50%);
+        filter: drop-shadow(-2px 3px 4px rgba(80, 55, 30, 0.18));
+        z-index: 1;
+      }
+
+      .grid {
+        display: none;
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background-image:
+          repeating-linear-gradient(0deg, rgba(31, 28, 24, 0.085) 0 1.7px, transparent 1.7px 76px),
+          repeating-linear-gradient(90deg, rgba(31, 28, 24, 0.085) 0 1.7px, transparent 1.7px 76px);
+      }
+
+      .mark {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        color: var(--t-ink);
+        z-index: 2;
+      }
+
+      .classic-mark {
+        display: none;
+        position: absolute;
+        inset: 0;
+        align-items: center;
+        justify-content: center;
+        padding-right: 26px;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        font-weight: 800;
+        font-size: 272px;
+        letter-spacing: -18px;
+        color: var(--t-ink);
+        z-index: 2;
+      }
+
+      .classic-mark .plus {
+        color: var(--t-acc);
+        letter-spacing: -8px;
+      }
+
+      .tray-mark {
+        display: none;
+        width: 64px;
+        height: 64px;
+      }
+
+      .style-ink .sheet {
+        background:
+          radial-gradient(120% 120% at 50% 20%, rgba(255, 255, 255, 0.08), transparent 55%),
+          linear-gradient(135deg, var(--d-hi) 0%, var(--d-mid) 60%, var(--d-lo) 100%);
+        box-shadow:
+          inset 2px 2px 0 rgba(255, 255, 255, 0.16),
+          inset -1px -2px 0 rgba(0, 0, 0, 0.35),
+          0 26px 30px rgba(0, 0, 0, 0.45),
+          0 9px 11px rgba(0, 0, 0, 0.3);
+      }
+
+      .style-ink .sheet::after {
+        background: linear-gradient(
+          to bottom,
+          transparent 0%,
+          rgba(255, 255, 255, 0.045) 45%,
+          transparent 100%
+        );
+        border-top-color: rgba(255, 255, 255, 0.06);
+      }
+
+      .style-ink .fold {
+        background: linear-gradient(225deg, var(--d-fold) 0 49.5%, transparent 50%);
+      }
+
+      .style-ink .mark {
+        color: var(--d-ink);
+      }
+
+      .style-ink .classic-mark {
+        color: var(--d-ink);
+      }
+
+      .style-ink .classic-mark .plus {
+        color: var(--d-acc);
+      }
+
+      .style-ink .grid {
+        background-image:
+          repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1.7px, transparent 1.7px 76px),
+          repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 1.7px, transparent 1.7px 76px);
+      }
+
+      .style-grid .grid {
+        display: block;
+      }
+
+      .style-classic .stage {
+        width: 860px;
+        height: 860px;
+      }
+
+      .style-classic .sheet {
+        border-radius: 190px;
+        background:
+          radial-gradient(140% 120% at 55% 28%, rgba(255, 255, 255, 0.5), transparent 56%),
+          linear-gradient(158deg, var(--t-hi) 0%, var(--t-mid) 58%, var(--t-lo) 100%);
+      }
+
+      .style-classic .mark {
+        display: none;
+      }
+
+      .style-classic .fold {
+        display: none;
+      }
+
+      .style-classic .classic-mark {
+        display: flex;
+      }
+
+      body.tray .sheet,
+      body.tray .stage {
+        display: none;
+      }
+
+      body.tray .tray-mark {
+        display: block;
+      }
+    </style>
+  </head>
+  <body data-tint="paper">
+    <div class="stage">
+      <div class="sheet">
+        <div class="fold"></div>
+        <div class="grid"></div>
+        <svg class="mark" viewBox="0 0 1024 1024" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="rotate(-0.8 320 512)">
+              <path d="M320 350 C323 420 317 590 321 670" stroke-width="60" />
+              <path d="M190 512 C254 508 386 516 450 511" stroke-width="56" />
+            </g>
+            <g transform="rotate(0.6 720 512)">
+              <path d="M720 346 C724 420 717 600 722 674" stroke-width="62" />
+              <path d="M590 512 C654 508 786 518 850 511" stroke-width="58" />
+            </g>
+          </g>
+        </svg>
+        <div class="classic-mark">n<span class="plus">++</span></div>
+      </div>
+    </div>
+
+    <svg class="tray-mark" viewBox="0 0 64 64" aria-hidden="true">
+      <g fill="none" stroke="#000" stroke-linecap="round">
+        <path d="M7.4 32.1C11 31.7 15.5 32.5 20.4 32C23.6 31.7 25 32.1 26 31.9" stroke-width="7.4" />
+        <path d="M16.9 14.7C16.6 22 17 36 16.7 49.3" stroke-width="7.6" />
+        <path d="M38 32.3C41.5 31.9 46.3 32.6 51 32.1C53.6 31.8 55.5 32.2 56.6 32" stroke-width="7.2" />
+        <path d="M47.5 14.9C47.2 23 47.6 37 47.3 49.1" stroke-width="7.5" />
+      </g>
+    </svg>
+
+    <script>
+      function applyStyle(style, tray, tint) {
+        document.body.className = 'style-' + style + (tray ? ' tray' : '');
+        document.body.dataset.tint = tint || 'paper';
+        const size = tray ? 64 : 1024;
+        document.documentElement.style.width = size + 'px';
+        document.documentElement.style.height = size + 'px';
+        document.body.style.width = size + 'px';
+        document.body.style.height = size + 'px';
+      }
+
+      const params = new URLSearchParams(location.search);
+      applyStyle(params.get('style') || 'napkin', params.get('tray') === '1', params.get('tint') || 'paper');
+      window.setIconStyle = applyStyle;
+    </script>
+  </body>
+</html>

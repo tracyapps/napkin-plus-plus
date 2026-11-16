@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.zwork/
+.DS_Store
+*.log
+
+# local scratch and site build leftovers
+docs/scratch/
+site/.vercel/
+.vercel/

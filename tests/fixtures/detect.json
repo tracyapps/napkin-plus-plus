@@ -1,0 +1,48 @@
+{
+  "ok": true,
+  "proposals": {
+    "stack": [
+      { "name": "Next.js", "evidence": "next dependency" },
+      { "name": "TypeScript", "evidence": "tsconfig.json" }
+    ],
+    "tags": ["nextjs", "vercel"],
+    "services": [
+      {
+        "provider": "Vercel",
+        "role": "hosting",
+        "url": "https://vercel.com/dashboard",
+        "notes": "x-vercel-id response header",
+        "evidence": "x-vercel-id response header"
+      },
+      {
+        "provider": "Neon",
+        "role": "database",
+        "url": "https://console.neon.tech",
+        "notes": "@neondatabase/serverless dependency",
+        "evidence": "@neondatabase/serverless dependency"
+      }
+    ],
+    "links": [],
+    "languages": [
+      { "name": "TypeScript", "evidence": "GitHub primary language" },
+      { "name": "CSS", "evidence": "12 KB in the repo" }
+    ],
+    "evidence": [],
+    "warnings": [],
+    "note": "Auto-detected from lu.app and github.com/acme/lu: hosted on Vercel; Neon for data; TypeScript.",
+    "summary": "hosted on Vercel; Neon for data; TypeScript",
+    "sources": ["https://lu.app", "https://github.com/acme/lu"],
+    "hasAnything": true,
+    "offline": false
+  },
+  "headline": "Vercel · Neon · Next.js",
+  "page": { "title": "Lu — client portal", "description": "The client portal for Lu" },
+  "repo": { "owner": "acme", "name": "lu", "language": "TypeScript" },
+  "hosting": [{ "label": "Vercel", "evidence": "x-vercel-id response header" }],
+  "dns": ["Cloudflare"],
+  "email": ["Resend"],
+  "warnings": [],
+  "offline": false,
+  "cached": false,
+  "fetchedAt": "2026-11-15T00:00:00.000Z"
+}

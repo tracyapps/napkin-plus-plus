@@ -1,0 +1,350 @@
+name: Release
+
+# Tag a commit (v1.0.0) and push the tag: build arm64 + x64 + universal, checksum
+# everything, and publish a GitHub Release. `workflow_dispatch` builds the same
+# artifacts for a dry run and only publishes when `publish` is checked.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish as (defaults to v<package.json version>)'
+        required: false
+        default: ''
+      publish:
+        description: 'Create the GitHub Release (leave off for a build-only dry run)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  meta:
+    name: resolve version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      tag: ${{ steps.resolve.outputs.tag }}
+      publish: ${{ steps.resolve.outputs.publish }}
+      prerelease: ${{ steps.resolve.outputs.prerelease }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Resolve version, tag and release flags
+        id: resolve
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_PUBLISH: ${{ inputs.publish }}
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+
+          if [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            TAG="${GITHUB_REF_NAME}"
+            PUBLISH="true"
+          else
+            TAG="${INPUT_TAG:-v${VERSION}}"
+            PUBLISH="${INPUT_PUBLISH:-false}"
+          fi
+
+          # A release whose tag and package.json disagree ships a bundle that
+          # lies about its own version, so refuse to publish that combination.
+          if [ "$TAG" != "v$VERSION" ]; then
+            if [ "$PUBLISH" = "true" ]; then
+              echo "::error::tag ${TAG} does not match package.json v${VERSION} - run scripts/bump-version.mjs first"
+              exit 1
+            fi
+            echo "::warning::dry run: building ${VERSION} under tag ${TAG}"
+          fi
+
+          case "$TAG" in
+            *-*) PRERELEASE="true" ;;
+            *) PRERELEASE="false" ;;
+          esac
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "publish=${PUBLISH}" >> "$GITHUB_OUTPUT"
+          echo "prerelease=${PRERELEASE}" >> "$GITHUB_OUTPUT"
+          echo "napkin++ ${VERSION} -> ${TAG} (publish=${PUBLISH}, prerelease=${PRERELEASE})"
+
+  build:
+    name: build (${{ matrix.arch }})
+    needs: meta
+    runs-on: macos-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x64, universal]
+    env:
+      ARCH: ${{ matrix.arch }}
+      VERSION: ${{ needs.meta.outputs.version }}
+      # GitHub does not expose `secrets` to a step's `if:`, so evaluate the
+      # presence of the notarization secrets once, here.
+      HAS_NOTARY_CREDS: ${{ secrets.APPLE_ID != '' && secrets.APPLE_APP_SPECIFIC_PASSWORD != '' && secrets.APPLE_TEAM_ID != '' }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Same invocation as scripts/package-macos.sh, plus --arch. The icon is
+      # taken from the committed assets/icon.icns instead of re-rendering it,
+      # because `npm run icons` needs to boot Electron.
+      - name: Build .app
+        run: |
+          set -euo pipefail
+          if [ ! -f assets/icon.icns ]; then
+            echo "::error::assets/icon.icns is missing - run npm run icons locally and commit it"
+            exit 1
+          fi
+          ./node_modules/.bin/electron-packager . "napkin++" \
+            --platform=darwin \
+            --arch="$ARCH" \
+            --app-bundle-id=com.local.napkin-plus-plus \
+            --app-version="$VERSION" \
+            --app-category-type=public.app-category.developer-tools \
+            --icon=assets/icon.icns \
+            --out=dist \
+            --overwrite \
+            --prune=true \
+            --quiet \
+            --ignore="^/(docs|tests|dist|scripts|\.zwork|node_modules)($|/)" \
+            --ignore="^/(README\.md|package-lock\.json|\.gitignore)$"
+
+      - name: Ad-hoc sign the bundle
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          apps=(dist/napkin++-darwin-*/napkin++.app)
+          if [ ${#apps[@]} -ne 1 ]; then
+            echo "::error::expected one app bundle, found ${#apps[@]}"
+            exit 1
+          fi
+          APP="${apps[0]}"
+          echo "APP=$APP" >> "$GITHUB_ENV"
+
+          xattr -cr "$APP" || true
+          # The packager copies Electron's icon under its default name. Rename it
+          # before signing so the signature covers the final Info.plist.
+          if [ -f "$APP/Contents/Resources/electron.icns" ]; then
+            mv "$APP/Contents/Resources/electron.icns" "$APP/Contents/Resources/napkin.icns"
+            /usr/libexec/PlistBuddy -c "Set :CFBundleIconFile napkin.icns" "$APP/Contents/Info.plist"
+          fi
+          cmp -s assets/icon.icns "$APP/Contents/Resources/napkin.icns" || {
+            echo "::error::bundle icon does not match assets/icon.icns"
+            exit 1
+          }
+          codesign --force --deep --sign - "$APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+
+      - name: Verify architecture
+        run: |
+          set -euo pipefail
+          EXEC_NAME="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Contents/Info.plist")"
+          BIN="$APP/Contents/MacOS/$EXEC_NAME"
+          if [ ! -f "$BIN" ]; then
+            echo "::error::missing executable $BIN"
+            exit 1
+          fi
+          ARCHS="$(lipo -archs "$BIN")"
+          echo "main executable architectures: $ARCHS"
+
+          FW="$APP/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework"
+          if [ -f "$FW" ]; then
+            FW_ARCHS="$(lipo -archs "$FW")"
+            echo "Electron Framework architectures: $FW_ARCHS"
+          else
+            FW_ARCHS="$ARCHS"
+          fi
+
+          require_arch() {
+            for slices in "$ARCHS" "$FW_ARCHS"; do
+              echo "$slices" | grep -qw "$1" || {
+                echo "::error::missing $1 slice in: $slices"
+                exit 1
+              }
+            done
+          }
+
+          case "$ARCH" in
+            universal)
+              require_arch arm64
+              require_arch x86_64
+              ;;
+            arm64)
+              require_arch arm64
+              ;;
+            x64)
+              require_arch x86_64
+              ;;
+          esac
+
+      - name: Import Developer ID certificate (optional)
+        if: env.HAS_NOTARY_CREDS == 'true'
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MACOS_CERT_P12:-}" ]; then
+            echo "::notice::MACOS_CERT_P12 is not set - skipping certificate import. Notarization will be skipped unless a Developer ID identity is already in the runner keychain."
+            exit 0
+          fi
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "${MACOS_CERT_PASSWORD:-}" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm -f "$RUNNER_TEMP/cert.p12"
+          echo "codesigning identities:"
+          security find-identity -v -p codesigning "$KEYCHAIN"
+
+      - name: Sign + notarize (optional)
+        if: env.HAS_NOTARY_CREDS == 'true'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        run: |
+          set -euo pipefail
+          IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
+          if ! printf '%s' "$IDENTITIES" | grep -q "Developer ID Application"; then
+            echo "::notice::no Developer ID Application identity available - shipping the ad-hoc signed build without notarization"
+            exit 0
+          fi
+          bash scripts/notarize.sh "$APP"
+
+      - name: Zip and checksum
+        run: |
+          set -euo pipefail
+          ZIP_NAME="napkin++-${VERSION}-darwin-${ARCH}.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "dist/$ZIP_NAME"
+          # Written from inside dist/ so the checksum file records a bare filename.
+          ( cd dist && shasum -a 256 "$ZIP_NAME" > "$ZIP_NAME.sha256" )
+          cat "dist/$ZIP_NAME.sha256"
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: napkin++-${{ matrix.arch }}
+          path: |
+            dist/napkin++-${{ needs.meta.outputs.version }}-darwin-${{ matrix.arch }}.zip
+            dist/napkin++-${{ needs.meta.outputs.version }}-darwin-${{ matrix.arch }}.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: publish release
+    needs: [meta, build]
+    if: needs.meta.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Download builds
+        uses: actions/download-artifact@v4
+        with:
+          pattern: napkin++-*
+          path: dist
+          merge-multiple: true
+
+      - name: Verify downloaded assets
+        working-directory: dist
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          ls -lh
+          for arch in arm64 x64 universal; do
+            name="napkin++-${VERSION}-darwin-${arch}.zip"
+            [ -f "$name" ] || { echo "::error::missing $name"; exit 1; }
+            [ -f "$name.sha256" ] || { echo "::error::missing $name.sha256"; exit 1; }
+          done
+          # Re-check that every artifact survived the round trip intact.
+          shasum -a 256 -c ./*.zip.sha256
+
+      - name: Assemble SHA256SUMS.txt
+        working-directory: dist
+        run: |
+          set -euo pipefail
+          shasum -a 256 ./*.zip > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Extract release notes from CHANGELOG.md
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const version = process.env.VERSION;
+          const escaped = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const isHeadingFor = (line) =>
+            line.startsWith('## ') && new RegExp('(^|[^0-9A-Za-z.])v?' + escaped + '([^0-9A-Za-z.]|$)').test(line);
+
+          let notes = '';
+          if (fs.existsSync('CHANGELOG.md')) {
+            const lines = fs.readFileSync('CHANGELOG.md', 'utf8').split(/\r?\n/);
+            const start = lines.findIndex(isHeadingFor);
+            if (start !== -1) {
+              const body = [];
+              for (let i = start + 1; i < lines.length; i += 1) {
+                if (/^##\s/.test(lines[i]) || /^#\s/.test(lines[i])) break;
+                body.push(lines[i]);
+              }
+              notes = body.join('\n').trim();
+            }
+          }
+
+          fs.writeFileSync('release-notes.md', notes ? notes + '\n' : '');
+          console.log(notes ? `notes: ${notes.split('\n').length} lines for ${version}` : `no CHANGELOG section for ${version}`);
+          NODE
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.meta.outputs.tag }}
+          PRERELEASE: ${{ needs.meta.outputs.prerelease }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          args=(--title "napkin++ ${TAG}")
+          if [ "$PRERELEASE" = "true" ]; then
+            args+=(--prerelease)
+          fi
+          if [ "$EVENT_NAME" = "push" ]; then
+            args+=(--verify-tag)
+          fi
+          if [ -s release-notes.md ]; then
+            args+=(--notes-file release-notes.md)
+          else
+            echo "::notice::no CHANGELOG section for ${TAG} - falling back to generated notes"
+            args+=(--generate-notes)
+          fi
+          gh release create "$TAG" dist/*.zip dist/SHA256SUMS.txt "${args[@]}"

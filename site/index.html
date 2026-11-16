@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-theme-pref="system" data-accent="ember">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>napkin++ — a local-first project dossier for macOS</title>
+    <meta
+      name="description"
+      content="One place per project for API keys, env vars, logins, links, services, notes and snippets. Search everything with ⌘K, capture with ⌥Space. Free for macOS. No account, no sync, no telemetry."
+    />
+    <link rel="canonical" href="https://napkinplusplus.app/" />
+    <meta name="theme-color" content="#f4efe7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#131211" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="assets/icon-128.png" type="image/png" sizes="128x128" />
+    <link rel="apple-touch-icon" href="assets/icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="napkin++" />
+    <meta property="og:title" content="napkin++ — one place per project" />
+    <meta
+      property="og:description"
+      content="A local-first project dossier for macOS. Keys, env vars, logins, links, notes and snippets — searchable with ⌘K. Free, no account, no sync, no telemetry."
+    />
+    <meta property="og:url" content="https://napkinplusplus.app/" />
+    <meta property="og:image" content="https://napkinplusplus.app/assets/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="napkin++ — one place per project" />
+    <meta
+      name="twitter:description"
+      content="A local-first project dossier for macOS. Keys, env vars, logins, links, notes and snippets — searchable with ⌘K. Free, no account, no sync, no telemetry."
+    />
+    <meta name="twitter:image" content="https://napkinplusplus.app/assets/og.png" />
+
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem("napkin-theme");
+          if (pref !== "light" && pref !== "dark" && pref !== "system") pref = "system";
+          var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.setAttribute("data-theme", pref === "system" ? (dark ? "dark" : "light") : pref);
+          document.documentElement.setAttribute("data-theme-pref", pref);
+          var accent = localStorage.getItem("napkin-accent");
+          if (["ember", "moss", "ink", "plum"].indexOf(accent) < 0) accent = "ember";
+          document.documentElement.setAttribute("data-accent", accent);
+        } catch (error) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="assets/site.css" />
+    <script src="assets/config.js" defer></script>
+    <script src="assets/site.js" defer></script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "napkin++",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "macOS",
+        "description": "A local-first project dossier for developers: API keys, env vars, logins, links, services, notes and snippets, one place per project.",
+        "url": "https://napkinplusplus.app/",
+        "downloadUrl": "https://github.com/tapps/napkin-plus-plus/releases/latest",
+        "softwareVersion": "1.0.0",
+        "isAccessibleForFree": true,
+        "screenshot": "https://napkinplusplus.app/assets/shots/overview.png",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "tapps",
+          "url": "https://tapps.design"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">skip to content</a>
+
+    <header class="site-head">
+      <div class="wrap head-in">
+        <a class="brand" href="index.html" aria-label="napkin++ home">
+          <img src="assets/icon-128.png" width="128" height="128" alt="" />
+          <span>napkin<span class="plus">++</span></span>
+        </a>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+          <a href="index.html#what">what it does</a>
+          <a href="index.html#demo">demo</a>
+          <a href="support.html">support</a>
+          <a href="changelog.html">changelog</a>
+          <a class="nav-download" href="https://github.com/tapps/napkin-plus-plus/releases/latest" data-download>download for macOS</a>
+        </nav>
+        <div class="head-actions">
+          <button
+            class="theme-btn"
+            type="button"
+            data-theme-toggle
+            aria-label="theme: system. switch to light."
+            title="theme: system — click for light"
+          >
+            <svg class="i-system" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="7.5" />
+              <path d="M12 4.5v15" />
+              <path d="M12 4.5a7.5 7.5 0 0 1 0 15" />
+            </svg>
+            <svg class="i-light" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+            </svg>
+            <svg class="i-dark" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.2 14.8A8.5 8.5 0 0 1 9.2 3.8a8.5 8.5 0 1 0 11 11Z" />
+            </svg>
+            <span class="theme-label" data-theme-label>system</span>
+          </button>
+          <a class="btn btn-primary btn-sm" href="https://github.com/tapps/napkin-plus-plus/releases/latest" data-download>download</a>
+          <button
+            class="nav-toggle"
+            type="button"
+            data-nav-toggle
+            aria-expanded="false"
+            aria-controls="site-nav"
+            aria-label="open menu"
+          >
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="wrap">
+          <div class="hero-top">
+            <div>
+              <p class="kicker">a local-first project dossier · macOS</p>
+              <h1 id="hero-title">one place<br />per project.</h1>
+              <p class="lede">
+                napkin++ keeps the api keys, env vars, logins, links, services, notes and snippets that pile up
+                around a project — in one searchable place. press <kbd>⌘K</kbd>, type a few letters, copy the
+                thing. it all stays on your mac.
+              </p>
+              <div class="hero-actions">
+                <a class="btn btn-primary" href="https://github.com/tapps/napkin-plus-plus/releases/latest" data-download>
+                  download for macOS <span class="arrow" aria-hidden="true">↓</span>
+                </a>
+                <a class="btn btn-ghost" href="#demo">try the palette <span class="arrow" aria-hidden="true">↓</span></a>
+              </div>
+              <p class="hero-meta"><span>free</span><span>macOS 12+</span><span>apple silicon &amp; intel</span></p>
+              <p class="hero-meta"><span>no account</span><span>no sync</span><span>no telemetry</span></p>
+            </div>
+
+            <aside class="hero-index" aria-label="What one project holds">
+              <span class="idx-label">inside one project</span>
+              <ul>
+                <li><span>01</span>accounts &amp; logins</li>
+                <li><span>02</span>env vars &amp; keys</li>
+                <li><span>03</span>links &amp; repos</li>
+                <li><span>04</span>services &amp; dashboards</li>
+                <li><span>05</span>notes &amp; snippets</li>
+                <li><span>06</span>whatever you paste next</li>
+              </ul>
+            </aside>
+          </div>
+
+          <figure class="hero-shot">
+            <div class="window">
+              <div class="window-bar">
+                <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="window-title">napkin++ — lu app</span>
+                <span class="window-note">local dossier</span>
+              </div>
+              <img
+                src="assets/shots/overview.png"
+                width="1600"
+                height="1051"
+                alt="The napkin++ window on macOS, showing the lu app project: a sidebar with folders, tags and feedback; a project list; and a dossier with quick capture, preview and detection, counts, setup steps, services and links."
+                fetchpriority="high"
+                decoding="async"
+              />
+            </div>
+            <figcaption class="shot-caption">
+              <span>overview · sample project “lu app” · <a href="assets/shots/overview.png" target="_blank" rel="noopener">full size ↗</a></span>
+              <span>⌘K opens search from anywhere</span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <div class="proof">
+        <div class="wrap">
+          <ul aria-label="at a glance">
+            <li>free download</li>
+            <li>macOS 12+</li>
+            <li>apple silicon + intel</li>
+            <li>plain JSON</li>
+            <li>no account</li>
+            <li>no sync</li>
+            <li>no telemetry</li>
+          </ul>
+        </div>
+      </div>
+
+      <section class="section" id="what" aria-labelledby="what-title">
+        <div class="wrap">
+          <div class="split">
+            <div>
+              <p class="kicker">the shape of it</p>
+              <h2 id="what-title">not a password manager with a notes field.</h2>
+              <div class="prose">
+                <p>
+                  a project is the unit. you think “what does lu app run on?”, not “which vault entry has the
+                  resend key?”. so the project is the folder, and the keys, logins, environments, links and notes
+                  are its contents.
+                </p>
+                <p>
+                  copying is the verb. every value has a one-click copy; the palette puts copy on
+                  <kbd>⌘↵</kbd>. search is the navigation — it indexes the values, not just the titles. type
+                  <span class="mono">resend</span> and you get the service, the project, and the env var.
+                </p>
+              </div>
+            </div>
+
+            <ol class="principles">
+              <li>
+                <span class="num">01</span>
+                <div>
+                  <h3>a project is the unit</h3>
+                  <p>name, aliases, status, tags, stack. it can start as just a name and fill in as you learn it.</p>
+                </div>
+              </li>
+              <li>
+                <span class="num">02</span>
+                <div>
+                  <h3>copying is the primary verb</h3>
+                  <p>password, pin, api token, <span class="mono">KEY=value</span>, whole .env, url. one click, then back to the editor.</p>
+                </div>
+              </li>
+              <li>
+                <span class="num">03</span>
+                <div>
+                  <h3>search is the navigation</h3>
+                  <p>⌘K across projects, accounts, fields, env vars, notes, links and services.</p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="demo" aria-labelledby="demo-title">
+        <div class="wrap">
+          <div class="demo-intro">
+            <p class="kicker">try it</p>
+            <h2 id="demo-title">the palette, without the install.</h2>
+            <p class="lede">
+              a working mock of the command palette and project grid, with eight sample projects. type a name, a
+              service, or a key. arrow keys move, enter opens, escape goes back. <kbd>⌘K</kbd> jumps to the search
+              box. nothing here is a real secret.
+            </p>
+          </div>
+
+          <div class="demo" data-demo role="region" aria-label="Interactive demo of napkin++ search and project grid">
+            <div class="demo-bar">
+              <span class="demo-brand">napkin<span>++</span></span>
+              <span class="demo-file">demo vault · sample data</span>
+              <span class="demo-hint"><kbd>⌘K</kbd> focus</span>
+            </div>
+
+            <div class="demo-search">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="m16 16 4.5 4.5" />
+              </svg>
+              <label class="sr-only" for="demo-search">search the demo projects</label>
+              <input
+                id="demo-search"
+                type="text"
+                role="combobox"
+                aria-expanded="false"
+                aria-autocomplete="list"
+                aria-controls="demo-results"
+                aria-describedby="demo-help"
+                placeholder="Search projects, accounts, keys, notes…"
+                autocomplete="off"
+                spellcheck="false"
+                data-demo-input
+              />
+              <span class="demo-scope" aria-hidden="true">All</span>
+            </div>
+
+            <div class="demo-content">
+              <ul class="demo-grid" data-demo-grid aria-label="Sample projects"></ul>
+              <p class="demo-results-head" data-demo-results-head hidden>results</p>
+              <ul class="demo-results" id="demo-results" role="listbox" aria-label="Search results" data-demo-results hidden></ul>
+              <div class="demo-empty" data-demo-empty role="status" aria-live="polite" hidden>
+                <strong>no results</strong>
+                <span>try a project name, a service, or an env key.</span>
+              </div>
+              <div class="demo-dossier" data-demo-dossier hidden></div>
+              <noscript>
+                <p class="demo-empty">the demo needs javascript. the screenshots and the download still work.</p>
+              </noscript>
+            </div>
+
+            <div class="demo-foot">
+              <span><kbd>↑</kbd><kbd>↓</kbd> move</span>
+              <span><kbd>↵</kbd> open</span>
+              <span><kbd>esc</kbd> back</span>
+              <span class="demo-note">demo only · no real secrets</span>
+            </div>
+            <p class="sr-only" id="demo-help">
+              Type to filter eight sample projects. Use the up and down arrow keys to move through results, enter
+              to open a dossier, and escape to go back. Command K returns to the search box.
+            </p>
+            <p class="sr-only" role="status" aria-live="polite" data-demo-live></p>
+          </div>
+
+          <div class="demo-under">
+            <span>sample data in a working mock. the real app writes to <span class="mono">vault.json</span> on your mac.</span>
+            <a href="https://github.com/tapps/napkin-plus-plus/releases/latest" data-download>download to use your own ↓</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="accounts-title">
+        <div class="wrap">
+          <article class="feature">
+            <div class="feature-copy">
+              <p class="kicker">01 / accounts</p>
+              <h2 id="accounts-title">test users are not a dropdown.</h2>
+              <p class="lede">
+                a project usually has more than one login: test-1, test-2, a client's staging account, the admin
+                you made at 2am. napkin++ shows them all at once, each with typed fields — password, pin, api
+                token, recovery code — instead of one fixed password column.
+              </p>
+              <ul class="feature-list">
+                <li>masked by default. reveal one field, copy it in a click.</li>
+                <li>searchable from the palette, values included.</li>
+                <li>redacted in markdown export by default.</li>
+              </ul>
+            </div>
+            <figure class="feature-shot">
+              <div class="window">
+                <div class="window-bar">
+                  <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="window-title">accounts · lu app</span>
+                  <span class="window-note">2 accounts</span>
+                </div>
+                <img
+                  src="assets/shots/accounts.png"
+                  width="1600"
+                  height="585"
+                  alt="The accounts tab in napkin++, showing two test accounts with email, a masked password field, reveal and copy buttons."
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <figcaption>actual app window · sample project · <a href="assets/shots/accounts.png" target="_blank" rel="noopener">full size ↗</a></figcaption>
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="env-title">
+        <div class="wrap">
+          <article class="feature flip">
+            <div class="feature-copy">
+              <p class="kicker">02 / env &amp; keys</p>
+              <h2 id="env-title">paste a .env. get a table.</h2>
+              <p class="lede">
+                drop in a block and it becomes key/value rows, per environment — dev, staging, production, or your
+                own. copy one value, one <span class="mono">KEY=value</span> line, or the whole file. the tick stays
+                for the session, so you can see what you already grabbed.
+              </p>
+              <ul class="feature-list">
+                <li>paste a .env block; napkin++ splits it into keys.</li>
+                <li>right-click a row to edit in place. ↵ saves, esc puts it back.</li>
+                <li>one click copies the whole .env for that environment.</li>
+              </ul>
+            </div>
+            <figure class="feature-shot">
+              <div class="window">
+                <div class="window-bar">
+                  <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="window-title">env &amp; keys · lu app</span>
+                  <span class="window-note">dev / staging</span>
+                </div>
+                <img
+                  src="assets/shots/env.png"
+                  width="1600"
+                  height="513"
+                  alt="The env & keys tab in napkin++, with environments, key/value rows, and paste .env and copy .env actions."
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <figcaption>actual app window · sample project · <a href="assets/shots/env.png" target="_blank" rel="noopener">full size ↗</a></figcaption>
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <section class="band-dark" id="search" aria-labelledby="search-title">
+        <div class="wrap">
+          <div class="band-head">
+            <div>
+              <p class="kicker">03 / search</p>
+              <h2 id="search-title">⌘K is the app.</h2>
+            </div>
+            <p class="lede">
+              weighted fuzzy search over projects, accounts, credential fields, env vars, notes, links and
+              services. arrow keys move, <kbd>↵</kbd> opens, <kbd>⌘↵</kbd> copies the value in place.
+              <span class="mono">#tag</span>, <span class="mono">type:account</span> and
+              <span class="mono">project:lu</span> narrow it down.
+            </p>
+          </div>
+
+          <figure>
+            <div class="window">
+              <div class="window-bar">
+                <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="window-title">search · “resend”</span>
+                <span class="window-note">⌘K</span>
+              </div>
+              <img
+                src="assets/shots/palette.png"
+                width="1600"
+                height="1051"
+                alt="The napkin++ command palette floating over the app, with the query resend, a service, project and note result, and keyboard hints for move, open, copy, filter and close."
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <figcaption class="shot-caption">
+              <span>the palette · values are indexed, not just titles · <a href="assets/shots/palette.png" target="_blank" rel="noopener">full size ↗</a></span>
+              <span>↑↓ move · ↵ open · ⌘↵ copy · ⇥ filter</span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="quick-title">
+        <div class="wrap">
+          <article class="feature">
+            <div class="feature-copy">
+              <p class="kicker">04 / quick capture</p>
+              <h2 id="quick-title">option+space, from anywhere.</h2>
+              <p class="lede">
+                a spotlight-style panel that opens over whatever you're doing. type <span class="mono">lu app</span>
+                and press enter to create it, or paste a .env block and press enter to file the variables into the
+                last project. tab cycles project, note, secret and env. a near-duplicate opens the existing
+                project first.
+              </p>
+              <ul class="feature-list">
+                <li>global <kbd>⌥Space</kbd>; falls back to <kbd>⌥⇧Space</kbd> or <kbd>⌃⌥Space</kbd> if taken.</li>
+                <li>one omnibox, four modes, a target project.</li>
+                <li>it prefers opening a near-match over making a duplicate.</li>
+              </ul>
+            </div>
+            <figure class="feature-shot">
+              <div class="shot-crop">
+                <img
+                  src="assets/shots/quick.png"
+                  width="1320"
+                  height="744"
+                  alt="The napkin++ quick capture panel: an omnibox, mode tabs for project, note, secret and env, and matching projects below."
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <figcaption>quick capture · project mode · sample project · <a href="assets/shots/quick.png" target="_blank" rel="noopener">full size ↗</a></figcaption>
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="folders-title">
+        <div class="wrap">
+          <article class="feature flip">
+            <div class="feature-copy">
+              <p class="kicker">05 / folders</p>
+              <h2 id="folders-title">a colour, not another badge.</h2>
+              <p class="lede">
+                group projects into folders; the colour is a quiet left border in the project list. drag a project
+                onto a folder, right-click → move to folder, or set it in project details. one level deep, one
+                folder per project — enough to separate clients from experiments.
+              </p>
+              <ul class="feature-list">
+                <li>click a folder to filter the list.</li>
+                <li>drop onto “no folder” to take it back out.</li>
+                <li>right-click works on projects, accounts, variables and folders.</li>
+              </ul>
+            </div>
+            <figure class="feature-shot">
+              <div class="window">
+                <div class="window-bar">
+                  <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="window-title">folders · clients</span>
+                  <span class="window-note">1 project</span>
+                </div>
+                <img
+                  src="assets/shots/folders.png"
+                  width="1600"
+                  height="1051"
+                  alt="The napkin++ sidebar with a folder selected, filtering the project list; the folder colour carries into the list."
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <figcaption>actual app window · sample project · <a href="assets/shots/folders.png" target="_blank" rel="noopener">full size ↗</a></figcaption>
+            </figure>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="one-zero" aria-labelledby="release-title">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <p class="kicker">new in 1.0</p>
+              <h2 id="release-title">the dossier now fills itself in.</h2>
+            </div>
+            <p class="lede">
+              three additions that cut the boring part of starting a project. detection reads the url or repo you
+              hand it; every suggestion is yours to tick, edit or ignore.
+            </p>
+          </div>
+
+          <div class="release-grid">
+            <article class="release-row">
+              <div>
+                <h3>auto thumbnails.</h3>
+                <p>
+                  add a live url or repo and napkin++ captures the site's social preview image. switch the project
+                  list to a thumbnail grid and you can find a project by its face, not just its name.
+                </p>
+              </div>
+              <div class="release-visual">
+                <figure class="feature-shot">
+                  <div class="window">
+                    <div class="window-bar">
+                      <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                      <span class="window-title">projects · grid</span>
+                      <span class="window-note">4 projects</span>
+                    </div>
+                    <img
+                      src="assets/shots/grid.png"
+                      width="1600"
+                      height="1051"
+                      alt="The napkin++ project list switched to a thumbnail grid: lu app with a captured site preview, plus alpha plugin, digital ocean tagging and lu-app (2) cards."
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <figcaption>actual app window · sample project · <a href="assets/shots/grid.png" target="_blank" rel="noopener">full size ↗</a></figcaption>
+                </figure>
+              </div>
+            </article>
+
+            <article class="release-row">
+              <div>
+                <h3>auto-detect the stack.</h3>
+                <p>
+                  from a live url and/or a github repo, napkin++ recognises hosting (vercel, netlify, cloudflare),
+                  database (neon, supabase), auth, email, dns/registrar, and languages or frameworks. they arrive
+                  as suggestions you tick and edit — never silently overwritten.
+                </p>
+              </div>
+              <div class="release-visual">
+                <figure class="feature-shot">
+                  <div class="window">
+                    <div class="window-bar">
+                      <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                      <span class="window-title">detect details · lu app</span>
+                      <span class="window-note">suggestions</span>
+                    </div>
+                    <img
+                      src="assets/shots/detect.png"
+                      width="1600"
+                      height="1051"
+                      alt="The napkin++ Detect details sheet: Next.js and TypeScript under Stack, Vercel and Neon under Services, #nextjs and #vercel tags, a note describing what was detected, and Cancel and Add selected buttons."
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <figcaption>actual app window · sample project · <a href="assets/shots/detect.png" target="_blank" rel="noopener">full size ↗</a></figcaption>
+                </figure>
+              </div>
+            </article>
+
+            <article class="release-row">
+              <div>
+                <h3>feedback and updates, in the app.</h3>
+                <p>
+                  send a bug report or a note without leaving the window. update checks are built in too — no
+                  forum account, no support portal, no separate app for saying “this bit is wrong”.
+                </p>
+              </div>
+              <div class="release-visual">
+                <div class="release-note">
+                  <p>the person who reads the feedback is the person who wrote the app.</p>
+                  <p class="mono">1.0.0 · feedback, bug reports, update checks</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="shortcuts" aria-labelledby="shortcuts-title">
+        <div class="wrap">
+          <div class="shortcut-layout">
+            <div>
+              <p class="kicker">keyboard</p>
+              <h2 id="shortcuts-title">the keyboard does the walking.</h2>
+              <p class="lede">
+                no modes to remember. the palette is the important one; the rest are here for the days you'd
+                rather not lift your hands.
+              </p>
+              <p class="shortcut-note">
+                the global shortcut is <kbd>⌥Space</kbd>. if macOS or another app has taken it, napkin++ falls
+                back to <kbd>⌥⇧Space</kbd> or <kbd>⌃⌥Space</kbd>.
+              </p>
+            </div>
+
+            <table class="keys">
+              <caption class="sr-only">napkin++ keyboard shortcuts</caption>
+              <tbody>
+                <tr><th scope="row"><kbd>⌘K</kbd></th><td>search everything</td></tr>
+                <tr><th scope="row"><kbd>⌥Space</kbd></th><td>quick capture, from anywhere</td></tr>
+                <tr><th scope="row"><kbd>⌘⇧N</kbd></th><td>quick capture from the app</td></tr>
+                <tr><th scope="row"><kbd>⌘N</kbd></th><td>new project</td></tr>
+                <tr><th scope="row"><kbd>⌘F</kbd></th><td>filter the project list</td></tr>
+                <tr><th scope="row"><kbd>⌘1</kbd>–<kbd>⌘5</kbd></th><td>overview / accounts / env / notes / links</td></tr>
+                <tr><th scope="row"><kbd>⌘↵</kbd></th><td>file the project capture box</td></tr>
+                <tr><th scope="row"><kbd>⌘↵</kbd></th><td>copy the selected palette result (in the palette)</td></tr>
+                <tr><th scope="row"><kbd>⌘Z</kbd></th><td>undo the last vault change</td></tr>
+                <tr><th scope="row"><kbd>⌘,</kbd></th><td>settings</td></tr>
+                <tr><th scope="row"><kbd>⌘/</kbd></th><td>the shortcut sheet</td></tr>
+                <tr><th scope="row"><kbd>esc</kbd></th><td>cancel an edit / dismiss the capture box</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="appearance" aria-labelledby="appearance-title">
+        <div class="wrap">
+          <div class="look">
+            <div>
+              <p class="kicker">light and dark</p>
+              <h2 id="appearance-title">paper, graphite, four accents.</h2>
+              <p class="lede">
+                the app follows macOS by default. override it in settings — or right here, because this page uses
+                the same tokens. one accent is applied everywhere: buttons, selections, the little dot beside a
+                section label.
+              </p>
+
+              <div class="look-controls">
+                <div class="control-group">
+                  <span class="control-label" id="theme-control-label">theme</span>
+                  <div class="segmented" role="group" aria-labelledby="theme-control-label">
+                    <button type="button" data-theme-set="system" aria-pressed="true">system</button>
+                    <button type="button" data-theme-set="light" aria-pressed="false">light</button>
+                    <button type="button" data-theme-set="dark" aria-pressed="false">dark</button>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <span class="control-label" id="accent-control-label">accent</span>
+                  <div class="swatches" role="group" aria-labelledby="accent-control-label">
+                    <button class="swatch" type="button" data-set-accent="ember" aria-pressed="true" style="--swatch:#b2531f"><i aria-hidden="true"></i>ember</button>
+                    <button class="swatch" type="button" data-set-accent="moss" aria-pressed="false" style="--swatch:#5c7a4f"><i aria-hidden="true"></i>moss</button>
+                    <button class="swatch" type="button" data-set-accent="ink" aria-pressed="false" style="--swatch:#3f5f82"><i aria-hidden="true"></i>ink</button>
+                    <button class="swatch" type="button" data-set-accent="plum" aria-pressed="false" style="--swatch:#7a4f72"><i aria-hidden="true"></i>plum</button>
+                  </div>
+                </div>
+                <p class="look-note">
+                  the header toggle cycles system → light → dark. the app adds eight paper stocks and any hex
+                  accent in settings; this page keeps to the four presets.
+                </p>
+              </div>
+            </div>
+
+            <figure class="feature-shot">
+              <div class="window">
+                <div class="window-bar">
+                  <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="window-title">settings · appearance</span>
+                  <span class="window-note">moss accent</span>
+                </div>
+                <img
+                  src="assets/shots/settings.png"
+                  width="1600"
+                  height="1051"
+                  alt="The napkin++ settings sheet, showing theme controls, paper palettes, accent swatches, dock icon forms and the menu bar icon toggle."
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <figcaption>actual app window · appearance settings · <a href="assets/shots/settings.png" target="_blank" rel="noopener">full size ↗</a></figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="local" aria-labelledby="local-title">
+        <div class="wrap">
+          <div class="storage">
+            <div>
+              <p class="kicker">where it lives</p>
+              <h2 id="local-title">a file you can read.</h2>
+              <p class="lede">
+                the whole vault is one plain JSON document, with a daily backup and the previous save beside it.
+                no database, no account, no sync. grep it, back it up, move it.
+              </p>
+              <p class="honest">
+                it is not encrypted at rest in 1.0. it protects against the one-giant-text-file problem, not
+                against someone at your unlocked mac. turn on FileVault. <a href="privacy.html">more on privacy</a>.
+              </p>
+            </div>
+
+            <div class="path-box">
+              <div class="path-bar"><i aria-hidden="true"></i> the vault</div>
+              <pre><code>~/Library/Application Support/napkin++/
+  vault.json              <span class="dim"># the whole vault</span>
+  backups/
+    vault-YYYY-MM-DD.json <span class="dim"># one per day</span>
+    vault-prev.json       <span class="dim"># the previous save</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta" aria-labelledby="cta-title">
+        <div class="wrap cta-in">
+          <div>
+            <p class="kicker">1.0.0 · free</p>
+            <h2 id="cta-title">keep the next one on a napkin.</h2>
+            <p>
+              API keys, env vars, logins, links and the note you'll otherwise lose. one place per project, and it
+              stays on this mac.
+            </p>
+            <p class="cta-fine">
+              ad-hoc signed, not notarized. if macOS objects on first open: right-click the app → open.
+            </p>
+          </div>
+          <div class="cta-actions">
+            <a class="btn btn-primary" href="https://github.com/tapps/napkin-plus-plus/releases/latest" data-download>
+              download for macOS <span class="arrow" aria-hidden="true">↓</span>
+            </a>
+            <a class="btn btn-ghost" href="support.html">support the app</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-foot">
+      <div class="wrap">
+        <div class="foot-top">
+          <div class="foot-brand">
+            <a class="brand" href="index.html" aria-label="napkin++ home">
+              <img src="assets/icon-128.png" width="128" height="128" alt="" />
+              <span>napkin<span class="plus">++</span></span>
+            </a>
+            <p>one place per project. a local-first dossier for macOS, made by one person.</p>
+            <a class="foot-mail" href="mailto:hello@napkinplusplus.app" data-email>hello@napkinplusplus.app</a>
+          </div>
+          <div class="foot-cols">
+            <div>
+              <h2 class="foot-label">app</h2>
+              <ul>
+                <li><a href="https://github.com/tapps/napkin-plus-plus/releases/latest" data-download>download</a></li>
+                <li><a href="index.html#demo">demo</a></li>
+                <li><a href="changelog.html">changelog</a></li>
+                <li><a href="privacy.html">privacy</a></li>
+              </ul>
+            </div>
+            <div>
+              <h2 class="foot-label">help</h2>
+              <ul>
+                <li><a href="support.html">support</a></li>
+                <li><a href="contact.html">contact</a></li>
+                <li><a href="mailto:hello@napkinplusplus.app" data-email>email</a></li>
+              </ul>
+            </div>
+            <div>
+              <h2 class="foot-label">elsewhere</h2>
+              <ul>
+                <li><a href="https://gradhuely.com" data-apps>other apps</a></li>
+                <li><a href="https://tapps.design" data-developer>tapps.design</a></li>
+                <li><a href="https://github.com/tapps/napkin-plus-plus" data-github>github</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="foot-bottom">
+          <span>© <span data-year>2026</span> tapps</span>
+          <span>no cookies. no trackers. no telemetry.</span>
+          <span>made on a mac</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

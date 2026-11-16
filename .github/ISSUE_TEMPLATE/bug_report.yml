@@ -1,0 +1,98 @@
+name: Bug report
+description: Something in napkin++ is broken, crashes, or behaves unexpectedly.
+title: '[bug] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. napkin++ holds real credentials, so please scrub this
+        report: no API keys, passwords, tokens or vault contents.
+
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: The behaviour you actually saw, including any error text.
+      placeholder: I hit ⌘F, typed a project name, and the window went blank.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: What should have happened instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps, starting from a fresh launch if you can.
+      placeholder: |
+        1. Open napkin++
+        2. Press ⌘N and create a project called "test"
+        3. ...
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: 'Settings → About. Bundled builds show a version like 1.0.0; from source, `node -p "require(\"./package.json\").version"`.'
+      placeholder: 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      description: 'Apple menu → About This Mac, e.g. macOS 15.1.'
+      placeholder: macOS 15.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: chip
+    attributes:
+      label: Chip
+      description: Apple menu → About This Mac.
+      options:
+        - Apple silicon (arm64)
+        - Intel (x64)
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: |
+        Paste any diagnostics the app offers to copy, plus relevant lines from
+        Console.app filtered by `napkin++`. If you run from source, include the
+        terminal output of `npm start`.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag and drop images here. Blur anything sensitive.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: redacted
+    attributes:
+      label: Before submitting
+      options:
+        - label: I removed real keys, passwords and tokens from this report.
+          required: true
+        - label: I checked that this is not already reported.
+          required: true
