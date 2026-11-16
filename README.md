@@ -23,6 +23,12 @@ The app opens with an empty vault; press `⌘N` or `⌥Space` to start.
 
 ### Install it as a macOS app
 
+Download the universal ZIP from [GitHub Releases](https://github.com/tracyapps/napkin-plus-plus/releases/latest).
+Unzip it and drag `napkin++.app` to Applications. The universal build supports
+Apple silicon and Intel Macs running macOS 13 or later.
+
+### Build it locally
+
 ```bash
 npm run package
 open "dist/napkin++-darwin-arm64/napkin++.app"
@@ -147,9 +153,8 @@ Diagnostics are version, macOS, settings, counts and the last renderer error.
 Never project names, links or secret values.
 
 **Updates, honestly.** About & updates checks GitHub Releases once a day, shows
-the version and download size, and can skip a release. This build downloads and
-replaces; it does not install silently, because that needs a Developer ID
-signature and notarization.
+the version and download size, and can skip a release. To update, quit napkin++,
+download the new ZIP from GitHub, and replace the app in Applications.
 
 ## Keyboard
 

@@ -89,6 +89,7 @@ jobs:
     env:
       ARCH: ${{ matrix.arch }}
       VERSION: ${{ needs.meta.outputs.version }}
+      PUBLISH: ${{ needs.meta.outputs.publish }}
       # GitHub does not expose `secrets` to a step's `if:`, so evaluate the
       # presence of the notarization secrets once, here.
       HAS_NOTARY_CREDS: ${{ secrets.APPLE_ID != '' && secrets.APPLE_APP_SPECIFIC_PASSWORD != '' && secrets.APPLE_TEAM_ID != '' }}
@@ -140,6 +141,9 @@ jobs:
             exit 1
           fi
           APP="${apps[0]}"
+          PLIST="$APP/Contents/Info.plist"
+          [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST")" = "$VERSION" ]
+          [ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")" = com.local.napkin-plus-plus ]
           echo "APP=$APP" >> "$GITHUB_ENV"
 
           xattr -cr "$APP" || true
@@ -198,7 +202,13 @@ jobs:
               ;;
           esac
 
-      - name: Import Developer ID certificate (optional)
+      - name: Require notarization credentials for publishing
+        if: env.PUBLISH == 'true' && env.HAS_NOTARY_CREDS != 'true'
+        run: |
+          echo "::error::Apple notarization credentials are required for a public release"
+          exit 1
+
+      - name: Import Developer ID certificate
         if: env.HAS_NOTARY_CREDS == 'true'
         env:
           MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
@@ -222,7 +232,7 @@ jobs:
           echo "codesigning identities:"
           security find-identity -v -p codesigning "$KEYCHAIN"
 
-      - name: Sign + notarize (optional)
+      - name: Sign + notarize
         if: env.HAS_NOTARY_CREDS == 'true'
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -233,7 +243,11 @@ jobs:
           set -euo pipefail
           IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
           if ! printf '%s' "$IDENTITIES" | grep -q "Developer ID Application"; then
-            echo "::notice::no Developer ID Application identity available - shipping the ad-hoc signed build without notarization"
+            if [ "$PUBLISH" = "true" ]; then
+              echo "::error::Developer ID Application identity is required for a public release"
+              exit 1
+            fi
+            echo "::notice::no Developer ID Application identity available - keeping an ad-hoc build for this dry run"
             exit 0
           fi
           bash scripts/notarize.sh "$APP"
@@ -339,8 +353,19 @@ jobs:
           if [ "$PRERELEASE" = "true" ]; then
             args+=(--prerelease)
           fi
-          if [ "$EVENT_NAME" = "push" ]; then
+          remote_tag="$(git ls-remote origin "refs/tags/$TAG" "refs/tags/$TAG^{}")"
+          if [ -n "$remote_tag" ]; then
+            tag_commit="$(printf '%s\n' "$remote_tag" | tail -1 | cut -f1)"
+            if [ "$tag_commit" != "$GITHUB_SHA" ]; then
+              echo "::error::Existing tag $TAG points to $tag_commit, but this workflow built $GITHUB_SHA"
+              exit 1
+            fi
             args+=(--verify-tag)
+          elif [ "$EVENT_NAME" = "push" ]; then
+            echo "::error::Tag $TAG disappeared during the release"
+            exit 1
+          else
+            args+=(--target "$GITHUB_SHA")
           fi
           if [ -s release-notes.md ]; then
             args+=(--notes-file release-notes.md)

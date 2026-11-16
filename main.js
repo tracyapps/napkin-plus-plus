@@ -1443,6 +1443,12 @@ async function runSmoke() {
   const copyPersisted = await exec(`document.querySelectorAll('.copy-btn.copied').length > 0`);
   check('ui.copy-checkmark-persists', copyPersisted, String(copyPersisted));
 
+  // The smoke window starts inactive. Give keyboard focus to the renderer
+  // before testing the context menu’s focus transfer.
+  mainWindow.show();
+  mainWindow.focus();
+  mainWindow.webContents.focus();
+  await delay(100);
   const ctxState = await exec(`(() => {
     const row = document.querySelector('[data-project-row][data-id="${projectId}"]');
     row.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 320, clientY: 300 }));

@@ -38,13 +38,17 @@ Details worth knowing:
 
 ## Required secrets
 
-CI needs none. These are optional and only unlock extra behaviour:
+The CI workflow needs no secrets. Public releases require Apple notarization
+credentials and a Developer ID Application identity. Build-only dry runs can
+use an ad-hoc signature when those are absent.
 
 | Secret | Used by | Effect when missing |
 | --- | --- | --- |
-| `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` | `release.yml` | Builds stay ad-hoc signed |
-| `MACOS_CERT_P12`, `MACOS_CERT_PASSWORD`, `MACOS_SIGN_IDENTITY` | `release.yml` | Certificate is not imported, so no Developer ID identity exists and notarization is skipped with a notice |
+| `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` | `release.yml` | Publishing builds fail |
+| `MACOS_CERT_P12`, `MACOS_CERT_PASSWORD` | `release.yml` | Hosted runners cannot import the Developer ID identity, so publishing builds fail |
 | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | `site.yml` | Deploy job is skipped with a notice; the link check still runs |
+
+`MACOS_SIGN_IDENTITY` is optional. The signing script can detect the identity.
 
 `GITHUB_TOKEN` is provided by Actions. The release job needs `contents: write`
 for it, which is declared on that job.

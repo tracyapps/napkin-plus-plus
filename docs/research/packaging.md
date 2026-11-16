@@ -1,6 +1,7 @@
 # macOS packaging notes
 
-Verified against Electron 45.2.1 on macOS arm64, November 2026.
+Early packaging experiments on macOS arm64. See [the release runbook](../RELEASING.md)
+for the current commands and signing requirements.
 
 ## Build
 
@@ -35,7 +36,8 @@ thumbnails and the tray/dock smoke checks pass in the packaged build.
   Team ID it can fail dynamic loading.
 - Locally built apps are not quarantined. If the `.zip` is copied between
   machines, right-click → Open is the fallback.
-- No notarization or auto-update in v1.
+- Public ZIPs follow the [notarization guide](../NOTARIZATION.md). Updates link
+  to GitHub Releases for manual installation.
 
 ## Login item
 

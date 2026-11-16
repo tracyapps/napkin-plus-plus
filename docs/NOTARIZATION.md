@@ -131,7 +131,7 @@ Verify:
 ```bash
 APP="dist/napkin++-darwin-universal/napkin++.app"
 codesign -dv --verbose=4 "$APP" 2>&1 | grep -E 'Authority|TeamIdentifier|flags'
-spctl -a -vvv -t install "$APP"
+spctl --assess --type execute --verbose=4 "$APP"
 xcrun stapler validate "$APP"
 ```
 
@@ -144,7 +144,9 @@ Expected: `Authority=Developer ID Application: …`, a `TeamIdentifier`, `flags=
 ## 5. GitHub Actions secrets
 
 CI can sign and notarize if you give it the certificate and the same three
-values. The release workflow skips notarization cleanly when they are absent.
+values. The release workflow requires Developer ID signing and notarization to
+publish. Build-only dry runs can produce ad-hoc ZIPs when no signing identity
+is available.
 
 ### Export the certificate as .p12
 
@@ -194,11 +196,8 @@ says whether notarization ran or was skipped.
 
 ## 6. After the first notarized release
 
-- Update the ad-hoc wording on the site (`site/index.html`, the download band),
-  in `README.md`, and in `docs/RELEASING.md`.
-- Delete the old ad-hoc download from the release and upload the notarized zips.
-- Test on a Mac that has never seen the app: download, unzip, launch. There
-  should be no Gatekeeper dialog.
+- Download the published ZIP on a clean Mac, check its SHA-256, unzip it, and
+  validate the staple and Gatekeeper assessment. Launch it from Applications.
 - Notarization is a prerequisite for one-click updates, not the whole feature.
   The app still checks and links to the release; see
   [RELEASING.md](RELEASING.md#9-why-updates-are-not-one-click-yet).

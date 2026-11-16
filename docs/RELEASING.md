@@ -14,7 +14,6 @@ a side effect.
 ## 1. Pre-flight
 
 ```bash
-cd /Users/tapps/_dev/apps/napkin++
 git switch main
 git pull --ff-only
 npm ci
@@ -68,7 +67,12 @@ node -p "require('./package.json').version"
 node -p "require('./package-lock.json').version"
 ```
 
-Both should print `1.0.0`. `npm ci` tolerates a stale version field, so a
+Both should print `1.0.0`. Also check that `packages[""].version` in the lockfile
+matches. Update the public version and changelog in `site/assets/config.js`,
+`site/index.html`, and `site/changelog.html`. The bump script does not edit the
+site. Run `npm run site:check` after updating it.
+
+`npm ci` tolerates a stale version field, so a
 mismatch will not fail CI - it just leaves the lockfile to be rewritten by some
 later `npm install`, which shows up as an unexplained diff. Sync it now.
 
@@ -112,7 +116,7 @@ files you touched.
 ## 4. Commit and tag
 
 ```bash
-git add package.json package-lock.json CHANGELOG.md
+git add package.json package-lock.json CHANGELOG.md site/assets/config.js site/index.html site/changelog.html
 git commit -m "release: napkin++ 1.0.0"
 git tag -a v1.0.0 -m "napkin++ 1.0.0"
 git push origin main
@@ -184,18 +188,14 @@ codesign -dv --verbose=4 "napkin++.app" 2>&1 | grep -E 'Identifier|Authority|Tea
 spctl --assess --type execute --verbose=4 "napkin++.app"
 ```
 
-Expected, for the current ad-hoc signed builds:
+Verify the stapled ticket as well:
 
-- `codesign --verify` prints `valid on disk` and `satisfies its Designated
-  Requirement`.
-- `codesign -dv` shows `Identifier=com.local.napkin-plus-plus` and
-  `flags=0x2(adhoc)`, with no `Authority=` and no `TeamIdentifier=`.
-- `spctl` prints `rejected`. That is normal for an ad-hoc signature: Gatekeeper
-  has no Developer ID to evaluate. It is not a build failure.
+```bash
+xcrun stapler validate "napkin++.app"
+```
 
-Expected, once the build is notarized: `Authority=Developer ID Application: …`,
-a `TeamIdentifier=`, and `spctl` prints `accepted` with
-`source=Notarized Developer ID`.
+Expect Developer ID Application authority, a Team Identifier, hardened runtime,
+a valid staple, and Gatekeeper acceptance with `source=Notarized Developer ID`.
 
 Bundle facts:
 
@@ -206,10 +206,8 @@ xattr -l "napkin++.app"
 ```
 
 - The version must equal the tag minus its `v`.
-- `xattr -l` may list `com.apple.quarantine` if a browser downloaded the zip.
-  That attribute is what makes macOS say "damaged" on an unsigned build. Remove
-  it with `xattr -dr com.apple.quarantine "napkin++.app"`, or right-click the app
-  and choose Open.
+- A browser download may set `com.apple.quarantine`. Keep it in place when
+  testing the public installation path.
 - Launch it, check the version shown in Settings → About, quit, and confirm the
   vault it creates is empty.
 
@@ -271,8 +269,7 @@ breaks, and expect to justify each one.
 
 ### Notarization in CI
 
-The release workflow signs and notarizes automatically when these repository
-secrets exist **and** a Developer ID identity is available:
+The release workflow signs and notarizes before publishing. Configure these repository secrets:
 
 | Secret | Value |
 | --- | --- |
@@ -281,7 +278,7 @@ secrets exist **and** a Developer ID identity is available:
 | `APPLE_TEAM_ID` | 10-character team id |
 | `MACOS_CERT_P12` | base64 of the exported `.p12` |
 | `MACOS_CERT_PASSWORD` | password used when exporting the `.p12` |
-| `MACOS_SIGN_IDENTITY` | full identity name, e.g. `Developer ID Application: tapps (ABCDE12345)` |
+| `MACOS_SIGN_IDENTITY` | optional full identity name, e.g. `Developer ID Application: tapps (ABCDE12345)` |
 
 Export and encode the certificate:
 
@@ -292,38 +289,20 @@ base64 -i DeveloperID.p12 | pbcopy    # paste into the MACOS_CERT_P12 secret
 ```
 
 The workflow imports the certificate into a throwaway keychain, then runs
-`scripts/notarize.sh`. If the Apple secrets are set but no Developer ID identity
-is present, it prints a notice and ships the ad-hoc build rather than failing the
-release — check the log to confirm which one you got.
+`scripts/notarize.sh`. Publishing fails when credentials or the signing identity
+are unavailable. A build-only dry run can keep an ad-hoc build for local testing.
 
 ---
 
-## 8. Switching the app from ad-hoc to notarized
+## 8. Publish an existing version from GitHub Actions
 
-Do this once, deliberately, and keep the identity stable afterwards.
+If the version is already committed, run **Release** manually on the commit
+you intend to ship. Enter the matching tag and enable **Publish**. If the tag
+does not exist on GitHub, the workflow creates it on the commit it built.
+If it already exists, the workflow checks that it resolves to the same commit.
 
-1. Get the Developer ID Application certificate and verify it with
-   `security find-identity -v -p codesigning`.
-2. Add the six secrets above to the repository.
-3. Run the Release workflow manually with `publish` unchecked. Confirm in the
-   build log that the notarize step ran and did not print the
-   "no Developer ID Application identity" notice.
-4. Download that workflow artifact and verify with `codesign -dv` (expect
-   `Authority=Developer ID Application: …`) and `spctl` (expect `accepted`).
-5. Tag the next version and let the workflow publish it.
-6. Update the user-facing text that says the build is ad-hoc and not notarized
-   (`README.md` → Install it as a macOS app). The site copy already says
-   "ad-hoc signed, not notarized" in the download band; change it in the same
-   release that first ships a notarized build.
-7. Keep `CFBundleIdentifier` (`com.local.napkin-plus-plus`) and the team
-   identity unchanged. Changing either breaks the trust chain for anyone
-   updating from an older build.
-
-`scripts/package-macos.sh` uses the same switch as CI: it notarizes when
-`APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD` and `APPLE_TEAM_ID` are set **and** a
-Developer ID identity is in the keychain; otherwise it ad-hoc signs and says so
-in the output. So a local build and a CI build of the same commit differ only in
-signature, not in contents.
+Keep the bundle identifier (`com.local.napkin-plus-plus`) and the Developer ID
+team stable across releases.
 
 ---
 
@@ -373,15 +352,11 @@ If you later add Squirrel.Mac:
 | Smoke test passes locally, fails in CI | The runner had no usable window session, or Electron failed to launch (partial `npm ci`) | Download the `smoke-screenshots` artifact and read the log. The smoke run uses its own throwaway vault, so a real vault is never the cause. |
 | Pre-release was published as "Latest" | Tag lacked a hyphen | Use `v1.0.0-rc.1` style tags; the workflow marks hyphenated tags as pre-releases. |
 
-### Rolling back a bad release
+### Correcting a bad release
 
-```bash
-gh release delete v1.0.0 --yes
-git push origin --delete v1.0.0
-```
-
-Then re-tag the fixed commit. Deleting a release does not delete downloads people
-already have, so also post what was wrong and which version to use instead.
+Ship a patch version with a new tag and explain the issue in the release notes.
+If the bad download needs to be removed, take it down from the Releases page.
+People who already downloaded it still need to install the patch.
 
 ---
 
